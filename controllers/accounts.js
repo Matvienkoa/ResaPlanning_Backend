@@ -80,6 +80,13 @@ exports.createAccount = async (req, res) => {
         })
 };
 
+// Get One Account
+exports.getOneAccount = (req, res) => {
+    models.Users.findOne({ where: { id: req.params.id } })
+    .then(account => res.status(200).json(account))
+    .catch(error => res.status(400).json({ error }));
+}
+
 // Get All Accounts
 exports.getAllAccounts = (req, res) => {
     models.Users.findAll({
@@ -89,11 +96,25 @@ exports.getAllAccounts = (req, res) => {
     .catch(error => res.status(400).json({ error }));
 }
 
+// Get One Customer
+exports.getOneCustomer = (req, res) => {
+    models.Customers.findOne({ where: { userId: req.params.id } })
+        .then(customer => res.status(200).json(customer))
+        .catch(error => res.status(400).json({ error }));
+}
+
 // Get All Customers
 exports.getAllCustomers = (req, res) => {
     models.Customers.findAll()
     .then((customers) => res.status(200).json(customers))
     .catch(error => res.status(400).json({ error }));
+}
+
+// Get One Employee
+exports.getOneEmployee = (req, res) => {
+    models.Employees.findOne({ where: { userId: req.params.id } })
+        .then(employee => res.status(200).json(employee))
+        .catch(error => res.status(400).json({ error }));
 }
 
 // Get All Employees
