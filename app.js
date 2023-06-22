@@ -29,7 +29,9 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use('/api/afc/auth', require('./routes/auth'));
 app.use('/api/afc/account', require('./routes/accounts'));
-// app.use('/api/spdev/supplier', require('./routes/suppliers'));
+app.use('/api/afc/customer', require('./routes/customers'));
+app.use('/api/afc/employee', require('./routes/employees'));
+
 // app.use('/api/spdev/product', require('./routes/products'));
 // app.use('/api/spdev/category', require('./routes/categories'));
 // app.use('/api/spdev/stock', require('./routes/stocks'));
