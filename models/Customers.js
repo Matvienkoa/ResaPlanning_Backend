@@ -3,7 +3,8 @@ const db = require('../config/config');
 
 const Customers = db.define('customers', {
     userId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        unique: 'userId'
     },
     company: {
         type: Sequelize.STRING
@@ -30,6 +31,9 @@ const Customers = db.define('customers', {
         type: Sequelize.STRING
     },
     mail: {
+        type: Sequelize.STRING
+    },
+    account: {
         type: Sequelize.STRING
     }
 });
