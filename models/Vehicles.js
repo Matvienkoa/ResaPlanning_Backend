@@ -1,40 +1,40 @@
 const Sequelize = require('sequelize');
 const db = require('../config/config');
 
-const Customers = db.define('customers', {
-    userId: {
+const Vehicles = db.define('vehicles', {
+    brand: {
+        type: Sequelize.STRING
+    },
+    model: {
+        type: Sequelize.STRING
+    },
+    year: {
+        type: Sequelize.STRING
+    },
+    kilometers: {
+        type: Sequelize.STRING
+    },
+    price: {
         type: Sequelize.INTEGER
     },
-    company: {
+    photo1: {
         type: Sequelize.STRING
     },
-    firstName: {
+    photo2: {
         type: Sequelize.STRING
     },
-    lastName: {
+    photo3: {
         type: Sequelize.STRING
     },
-    adress: {
+    photo4: {
         type: Sequelize.STRING
     },
-    adress2: {
+    immat: {
         type: Sequelize.STRING
     },
-    zipCode: {
-        type: Sequelize.STRING
-    },
-    city: {
-        type: Sequelize.STRING
-    },
-    phone: {
-        type: Sequelize.STRING
-    },
-    mail: {
-        type: Sequelize.STRING
-    },
-    account: {
+    observations: {
         type: Sequelize.STRING
     }
 });
 
-module.exports = Customers;
+module.exports = Vehicles;

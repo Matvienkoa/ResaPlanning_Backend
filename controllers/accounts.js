@@ -1,13 +1,12 @@
 const bcryptjs = require('bcryptjs');
 const models = require('../models/Index');
 const passwordValidator = require('../middleware/passwordValidator');
-const emailValidator = require('email-validator');
 
 // Create Account Employee
 exports.createAccountEmployee = async (req, res) => {
     // Empty Inputs
-    if (req.body.login === "" || req.body.password === "" || req.body.password2 === "" || req.body.role === "" || req.body.firstName === "" ||
-        req.body.login === undefined || req.body.password === undefined || req.body.password2 === undefined || req.body.role === undefined || req.body.firstName === undefined) {
+    if (req.body.login === "" || req.body.password === "" || req.body.password2 === "" || req.body.firstName === "" ||
+        req.body.login === undefined || req.body.password === undefined || req.body.password2 === undefined || req.body.firstName === undefined) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
     // Bad Schema Password
@@ -28,7 +27,7 @@ exports.createAccountEmployee = async (req, res) => {
                         models.Users.create({
                             login: req.body.login,
                             password: hash,
-                            role: req.body.role
+                            role: 'employee'
                         })
                         .then((user) => {
                             models.Employees.create({
@@ -36,7 +35,7 @@ exports.createAccountEmployee = async (req, res) => {
                                 firstName: req.body.firstName,
                                 lastName: req.body.lastName,
                             })
-                            .then((employee) => res.status(201).json({ employee }))
+                            .then((employee) => res.status(201).json(employee))
                             .catch(error => res.status(400).json({ error }));
                         })
                         .catch(error => res.status(400).json({ error }));
@@ -51,13 +50,9 @@ exports.createAccountEmployee = async (req, res) => {
 // Create Account Customer
 exports.createAccountCustomer = async (req, res) => {
     // Empty Inputs
-    if (req.body.login === "" || req.body.password === "" || req.body.password2 === "" || req.body.role === "" || req.body.firstName === "" || req.body.phone === "" || req.body.mail === "" ||
-        req.body.login === undefined || req.body.password === undefined || req.body.password2 === undefined || req.body.role === undefined || req.body.firstName === undefined || req.body.phone === undefined || req.body.mail === undefined) {
+    if (req.body.login === "" || req.body.password === "" || req.body.password2 === "" ||
+        req.body.login === undefined || req.body.password === undefined || req.body.password2 === undefined) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
-    }
-    // Bad Schema Mail
-    if (!emailValidator.validate(req.body.mail)) {
-        return res.status(400).json({ message: "Format d'email invalide" });
     }
     // Bad Schema Password
     if (!passwordValidator.validate(req.body.password)) {
@@ -66,6 +61,16 @@ exports.createAccountCustomer = async (req, res) => {
     // Different Password
     if (req.body.password !== req.body.password2) {
         return res.status(400).json({ message: "Les mots de passe ne sont pas identiques" });
+    }
+    // Check if customer is and have account
+    const customer = await models.Customers.findOne({
+        where: { id: req.body.id }
+    })
+    if (!customer) {
+        return res.status(400).json({ message: "Merci de sélectionner un client existant" });
+    }
+    if (customer.account === 'yes') {
+        return res.status(400).json({ message: "Ce client a déjà un compte de connexion" });
     }
     models.Users.findOne({
         where: { login: req.body.login }
@@ -77,27 +82,17 @@ exports.createAccountCustomer = async (req, res) => {
                         models.Users.create({
                             login: req.body.login,
                             password: hash,
-                            role: req.body.role
+                            role: 'customer'
                         })
-                            .then((user) => {
-                                if (user.role === 'customer') {
-                                    models.Customers.create({
-                                        userId: user.id,
-                                        company: req.body.company,
-                                        firstName: req.body.firstName,
-                                        lastName: req.body.lastName,
-                                        adress: req.body.adress,
-                                        adress2: req.body.adress2,
-                                        zipCode: req.body.zipCode,
-                                        city: req.body.city,
-                                        phone: req.body.phone,
-                                        mail: req.body.mail
-                                    })
-                                        .then((customer) => res.status(201).json({ customer }))
-                                        .catch(error => res.status(400).json({ error }));
-                                }
+                        .then((user) => {
+                            customer.update({
+                                userId: user.id,
+                                account: 'yes'
                             })
+                            .then((newCustomer) => res.status(201).json({ newCustomer }))
                             .catch(error => res.status(400).json({ error }));
+                        })
+                        .catch(error => res.status(400).json({ error }));
                     })
                     .catch(error => res.status(500).json({ error }));
             } else {
@@ -105,6 +100,144 @@ exports.createAccountCustomer = async (req, res) => {
             }
         })
 };
+
+// Edit Account Employee
+exports.editAccountEmployee = async (req, res) => {
+    // Empty Inputs
+    if (req.body.login === "" || req.body.firstName === "" ||
+        req.body.login === undefined || req.body.firstName === undefined) {
+        return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
+    }
+    // Bad Schema Password
+    if (req.body.password && !passwordValidator.validate(req.body.password)) {
+        return res.status(400).json({ message: "Mot de Passe invalide : Veuillez utiliser entre 8 et 30 caractères avec au minimum 1 Majuscule, 1 Minuscule et 1 Chiffre" });
+    }
+    // Different Password
+    if (req.body.password && req.body.password !== req.body.password2) {
+        return res.status(400).json({ message: "Les mots de passe ne sont pas identiques" });
+    }
+    const userLogin = await models.Users.findOne({ where: { login: req.body.login } })
+    if (userLogin && userLogin.id !== JSON.parse(req.params.id)) {
+        return res.status(400).json({ message: "Ce login existe déjà!" });
+    }
+    models.Users.findOne({ where: { id: req.params.id } })
+    .then((user) => {
+        if(req.body.password === "" || req.body.password === null || req.body.password === undefined) {
+            user.update({
+                login: req.body.login
+            })
+            .then((newUser) => {
+                models.Employees.findOne({ where: {userId: newUser.id }})
+                .then((employee) => {
+                    employee.update({
+                        firstName: req.body.firstName,
+                        lastName: req.body.lastName
+                    })
+                    .then((employee) => res.status(201).json(employee))
+                    .catch(error => res.status(400).json({ error }));
+                })
+                .catch(error => res.status(400).json({ error }));
+            })
+            .catch(error => res.status(400).json({ error }));
+        } else {
+            bcryptjs.hash(req.body.password, 10)
+            .then(hash => {
+                user.update({
+                    login: req.body.login,
+                    password: hash
+                })
+                .then((newUser) => {
+                    models.Employees.findOne({ where: { userId: newUser.id } })
+                        .then((employee) => {
+                            employee.update({
+                                firstName: req.body.firstName,
+                                lastName: req.body.lastName
+                            })
+                                .then((employee) => res.status(201).json(employee))
+                                .catch(error => res.status(400).json({ error }));
+                        })
+                        .catch(error => res.status(400).json({ error }));
+                })
+                .catch(error => res.status(400).json({ error }));
+            })
+            .catch(error => res.status(500).json({ error }));
+        }
+    })
+    .catch(error => res.status(400).json({ error }));
+}
+
+// Edit Account Customer
+exports.editAccountCustomer = async (req, res) => {
+    // Empty Inputs
+    if (req.body.login === "" || req.body.login === undefined) {
+        return res.status(400).json({ message: "Merci de renseigner un identifiant" });
+    }
+    // Bad Schema Password
+    if (req.body.password && !passwordValidator.validate(req.body.password)) {
+        return res.status(400).json({ message: "Mot de Passe invalide : Veuillez utiliser entre 8 et 30 caractères avec au minimum 1 Majuscule, 1 Minuscule et 1 Chiffre" });
+    }
+    // Different Password
+    if (req.body.password && req.body.password !== req.body.password2) {
+        return res.status(400).json({ message: "Les mots de passe ne sont pas identiques" });
+    }
+    const userLogin = await models.Users.findOne({ where: { login: req.body.login } })
+    if (userLogin && userLogin.id !== JSON.parse(req.params.id)) {
+        return res.status(400).json({ message: "Ce login existe déjà!" });
+    }
+    models.Users.findOne({ where: { id: req.params.id } })
+        .then((user) => {
+            if (req.body.password === "" || req.body.password === null || req.body.password === undefined) {
+                user.update({
+                    login: req.body.login
+                })
+                .then((newUser) => res.status(201).json(newUser))
+                .catch(error => res.status(400).json({ error }));
+            } else {
+                bcryptjs.hash(req.body.password, 10)
+                    .then(hash => {
+                        user.update({
+                            login: req.body.login,
+                            password: hash
+                        })
+                        .then((newUser) => res.status(201).json(newUser))
+                        .catch(error => res.status(400).json({ error }));
+                    })
+                    .catch(error => res.status(500).json({ error }));
+            }
+        })
+        .catch(error => res.status(400).json({ error }));
+}
+
+// Delete Account
+exports.deleteAccount = (req, res) => {
+    models.Users.findOne({ where: { id: req.params.id } })
+    .then(user => {
+        if(user.role === 'employee') {
+            models.Employees.findOne({ where: { userId: user.id } })
+            .then(employee => {
+                employee.destroy()
+                user.destroy()
+            })
+            .then(() => res.status(200).json({ message: 'Compte supprimé' }))
+            .catch(error => res.status(400).json({ error }));
+        }
+        if(user.role === 'customer') {
+            models.Customers.findOne({ where: { userId: user.id } })
+            .then(customer => {
+                customer.update({
+                    userId: null,
+                    account: 'no'
+                })
+                .then(() => {
+                    user.destroy()
+                })
+            })
+            .then(() => res.status(200).json({ message: 'Compte supprimé' }))
+            .catch(error => res.status(400).json({ error }));
+        }
+    })
+    .catch(error => res.status(400).json({ error }));
+}
 
 // Get One Account
 exports.getOneAccount = (req, res) => {
@@ -115,10 +248,9 @@ exports.getOneAccount = (req, res) => {
 
 // Get All Accounts
 exports.getAllAccounts = (req, res) => {
-    models.Users.findAll({
-        include: [{ model: models.Customers }, { model: models.Employees }]
-    })
+    models.Users.findAll()
     .then((accounts) => res.status(200).json(accounts))
     .catch(error => res.status(400).json({ error }));
 }
+
 

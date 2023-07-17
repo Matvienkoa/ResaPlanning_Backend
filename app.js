@@ -31,6 +31,9 @@ app.use('/api/afc/auth', require('./routes/auth'));
 app.use('/api/afc/account', require('./routes/accounts'));
 app.use('/api/afc/customer', require('./routes/customers'));
 app.use('/api/afc/employee', require('./routes/employees'));
+app.use('/api/afc/preparation', require('./routes/preparations'));
+app.use('/api/afc/step', require('./routes/steps'));
+app.use('/api/afc/vehicle', require('./routes/vehicles'));
 
 // app.use('/api/spdev/product', require('./routes/products'));
 // app.use('/api/spdev/category', require('./routes/categories'));
