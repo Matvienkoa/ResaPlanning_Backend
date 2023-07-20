@@ -6,7 +6,7 @@ const passwordValidator = require('../middleware/passwordValidator');
 // Create Account
 exports.signup = async (req, res) => {
     // Empty Inputs
-    if (req.body.login === "" || req.body.password === "" || req.body.password2 === "" || req.body.role === "") {
+    if (req.body.login === "" || req.body.password === "" || req.body.password2 === "" || req.body.role === "" || req.body.afc === "" || req.body.millenium === "") {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
     // Bad Schema Password
@@ -27,10 +27,12 @@ exports.signup = async (req, res) => {
                         models.Users.create({
                             login: req.body.login,
                             password: hash,
-                            role: req.body.role
+                            role: req.body.role,
+                            afc: req.body.afc,
+                            millenium: req.body.millenium
                         })
-                            .then((user) => res.status(201).json({ user }))
-                            .catch(error => res.status(400).json({ error }));
+                        .then((user) => res.status(201).json({ user }))
+                        .catch(error => res.status(400).json({ error }));
                     })
                     .catch(error => res.status(500).json({ error }));
             } else {
@@ -57,8 +59,10 @@ exports.login = (req, res) => {
                     }
                     res.status(200).json({
                         userId: user.id,
+                        accessAfc: user.afc,
+                        accessMillenium: user.millenium,
                         token: jwt.sign(
-                            { userId: user.id },
+                            { userId: user.id, accessAfc: user.afc, accessMillenium: user.millenium },
                             'RANDOM_TOKEN_SECRET',
                             { expiresIn: '24H' }
                         )

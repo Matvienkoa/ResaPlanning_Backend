@@ -2,6 +2,13 @@ const models = require('../models/Index');
 
 // Get One Employee
 exports.getOneEmployee = (req, res) => {
+    models.Employees.findOne({ where: { id: req.params.id } })
+        .then(employee => res.status(200).json(employee))
+        .catch(error => res.status(400).json({ error }));
+}
+
+// Get One Employee By userId
+exports.getOneEmployeeByUserId = (req, res) => {
     models.Employees.findOne({ where: { userId: req.params.id } })
         .then(employee => res.status(200).json(employee))
         .catch(error => res.status(400).json({ error }));

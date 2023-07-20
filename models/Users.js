@@ -11,6 +11,12 @@ const Users = db.define('users', {
     },
     role: {
         type: Sequelize.STRING
+    },
+    afc: {
+        type: Sequelize.STRING
+    },
+    millenium: {
+        type: Sequelize.STRING
     }
 });
 

@@ -267,6 +267,170 @@ exports.editVehiclePhoto = (req, res) => {
                 break;
         }
     })
+    .catch(error => res.status(400).json({ error }));
+}
+
+// Delete Photo Vehicle
+exports.deleteVehiclePhoto = (req, res) => {
+    if (req.body.numberPhoto === '' || req.body.numberPhoto === undefined) {
+        return res.status(400).json({ message: "Un problème est survenu, veuillez réessayer ultérieurement" });
+    }
+    models.Vehicles.findOne({ where: { id: req.params.id } })
+        .then((vehicle) => {
+            switch (req.body.numberPhoto) {
+                case 'photo1':
+                    if (vehicle.photo1 !== null) {
+                        let filename = vehicle.photo1.split('/images/')[1];
+                        if (filename !== undefined) {
+                            fs.unlink(`images/${filename}`,
+                                function (err) {
+                                    if (err) {
+                                        console.log('error');
+                                    } else {
+                                        console.log('fichier supprimé');
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    vehicle.update({
+                        photo1: null
+                    })
+                    .then((vehicle) => res.status(201).json(vehicle))
+                    .catch(error => res.status(400).json({ error }));
+                    break;
+                case 'photo2':
+                    if (vehicle.photo2 !== null) {
+                        let filename = vehicle.photo2.split('/images/')[1];
+                        if (filename !== undefined) {
+                            fs.unlink(`images/${filename}`,
+                                function (err) {
+                                    if (err) {
+                                        console.log('error');
+                                    } else {
+                                        console.log('fichier supprimé');
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    vehicle.update({
+                        photo2: null
+                    })
+                    .then((vehicle) => res.status(201).json(vehicle))
+                    .catch(error => res.status(400).json({ error }));
+                    break;
+                case 'photo3':
+                    if (vehicle.photo3 !== null) {
+                        let filename = vehicle.photo3.split('/images/')[1];
+                        if (filename !== undefined) {
+                            fs.unlink(`images/${filename}`,
+                                function (err) {
+                                    if (err) {
+                                        console.log('error');
+                                    } else {
+                                        console.log('fichier supprimé');
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    vehicle.update({
+                        photo3: null
+                    })
+                    .then((vehicle) => res.status(201).json(vehicle))
+                    .catch(error => res.status(400).json({ error }));
+                    break;
+                case 'photo4':
+                    if (vehicle.photo4 !== null) {
+                        let filename = vehicle.photo4.split('/images/')[1];
+                        if (filename !== undefined) {
+                            fs.unlink(`images/${filename}`,
+                                function (err) {
+                                    if (err) {
+                                        console.log('error');
+                                    } else {
+                                        console.log('fichier supprimé');
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    vehicle.update({
+                        photo4: null
+                    })
+                    .then((vehicle) => res.status(201).json(vehicle))
+                    .catch(error => res.status(400).json({ error }));
+                    break;
+            }
+        })
+        .catch(error => res.status(400).json({ error }));
+}
+
+// Delete Vehicle
+exports.deleteVehicle = (req, res) => {
+    models.Vehicles.findOne({ where: { id: req.params.id } })
+    .then((vehicle) => {
+        if (vehicle.photo1) {
+            let filename = vehicle.photo1.split('/images/')[1];
+            if (filename !== undefined) {
+                fs.unlink(`images/${filename}`,
+                    function (err) {
+                        if (err) {
+                            console.log('error');
+                        } else {
+                            console.log('fichier supprimé');
+                        }
+                    }
+                )
+            }
+        }
+        if (vehicle.photo2) {
+            let filename = vehicle.photo2.split('/images/')[1];
+            if (filename !== undefined) {
+                fs.unlink(`images/${filename}`,
+                    function (err) {
+                        if (err) {
+                            console.log('error');
+                        } else {
+                            console.log('fichier supprimé');
+                        }
+                    }
+                )
+            }
+        }
+        if (vehicle.photo3) {
+            let filename = vehicle.photo3.split('/images/')[1];
+            if (filename !== undefined) {
+                fs.unlink(`images/${filename}`,
+                    function (err) {
+                        if (err) {
+                            console.log('error');
+                        } else {
+                            console.log('fichier supprimé');
+                        }
+                    }
+                )
+            }
+        }
+        if (vehicle.photo4) {
+            let filename = vehicle.photo4.split('/images/')[1];
+            if (filename !== undefined) {
+                fs.unlink(`images/${filename}`,
+                    function (err) {
+                        if (err) {
+                            console.log('error');
+                        } else {
+                            console.log('fichier supprimé');
+                        }
+                    }
+                )
+            }
+        }
+        vehicle.destroy()
+        .then(() => res.status(200).json({ message: 'Véhicule supprimé' }))
+        .catch(error => res.status(400).json({ error }));
+    })
 }
 
 // Get All Vehicles

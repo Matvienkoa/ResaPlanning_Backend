@@ -27,7 +27,9 @@ exports.createAccountEmployee = async (req, res) => {
                         models.Users.create({
                             login: req.body.login,
                             password: hash,
-                            role: 'employee'
+                            role: 'employee',
+                            afc: 'yes',
+                            millenium: 'no'
                         })
                         .then((user) => {
                             models.Employees.create({
@@ -50,8 +52,8 @@ exports.createAccountEmployee = async (req, res) => {
 // Create Account Customer
 exports.createAccountCustomer = async (req, res) => {
     // Empty Inputs
-    if (req.body.login === "" || req.body.password === "" || req.body.password2 === "" ||
-        req.body.login === undefined || req.body.password === undefined || req.body.password2 === undefined) {
+    if (req.body.login === "" || req.body.password === "" || req.body.password2 === "" || req.body.afc === "" || req.body.millenium === "" ||
+        req.body.login === undefined || req.body.password === undefined || req.body.password2 === undefined || req.body.afc === undefined || req.body.millenium === undefined) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
     // Bad Schema Password
@@ -82,7 +84,9 @@ exports.createAccountCustomer = async (req, res) => {
                         models.Users.create({
                             login: req.body.login,
                             password: hash,
-                            role: 'customer'
+                            role: 'customer',
+                            afc: req.body.afc,
+                            millenium: req.body.millenium
                         })
                         .then((user) => {
                             customer.update({
@@ -169,7 +173,7 @@ exports.editAccountEmployee = async (req, res) => {
 // Edit Account Customer
 exports.editAccountCustomer = async (req, res) => {
     // Empty Inputs
-    if (req.body.login === "" || req.body.login === undefined) {
+    if (req.body.login === "" || req.body.afc === "" || req.body.millenium === "" || req.body.login === undefined || req.body.afc === undefined || req.body.millenium === undefined) {
         return res.status(400).json({ message: "Merci de renseigner un identifiant" });
     }
     // Bad Schema Password
@@ -188,7 +192,9 @@ exports.editAccountCustomer = async (req, res) => {
         .then((user) => {
             if (req.body.password === "" || req.body.password === null || req.body.password === undefined) {
                 user.update({
-                    login: req.body.login
+                    login: req.body.login,
+                    afc: req.body.afc,
+                    millenium: req.body.millenium
                 })
                 .then((newUser) => res.status(201).json(newUser))
                 .catch(error => res.status(400).json({ error }));
@@ -197,7 +203,9 @@ exports.editAccountCustomer = async (req, res) => {
                     .then(hash => {
                         user.update({
                             login: req.body.login,
-                            password: hash
+                            password: hash,
+                            afc: req.body.afc,
+                            millenium: req.body.millenium
                         })
                         .then((newUser) => res.status(201).json(newUser))
                         .catch(error => res.status(400).json({ error }));

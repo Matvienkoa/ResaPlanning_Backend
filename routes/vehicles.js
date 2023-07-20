@@ -7,6 +7,8 @@ const multerImage = require('../middleware/multerImage');
 router.post('/', multerImages, vehicleCtrl.createVehicle);
 router.put('/:id', vehicleCtrl.editVehicleInfos);
 router.put('/photo/:id', multerImage, vehicleCtrl.editVehiclePhoto);
+router.put('/photo/delete/:id', multerImage, vehicleCtrl.deleteVehiclePhoto);
+router.delete('/:id', vehicleCtrl.deleteVehicle);
 router.get('/', vehicleCtrl.getAllVehicles);
 router.get('/:id', vehicleCtrl.getOneVehicle);
 
