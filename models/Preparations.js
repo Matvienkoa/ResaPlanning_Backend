@@ -44,6 +44,18 @@ const Preparations = db.define('preparations', {
     photo4: {
         type: Sequelize.STRING
     },
+    start: {
+        type: Sequelize.DATE
+    },
+    end : {
+        type: Sequelize.DATE
+    },
+    allDay: {
+        type: Sequelize.BOOLEAN
+    },
+    billed: {
+        type: Sequelize.STRING
+    },
 });
 
 module.exports = Preparations;

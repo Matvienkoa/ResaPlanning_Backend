@@ -4,6 +4,7 @@ const Customers = require('./Customers');
 const Preparations = require('./Preparations');
 const Steps = require('./Steps');
 const Vehicles = require('./Vehicles');
+const Slots = require('./Slots');
 
 Preparations.hasMany(Steps);
 Steps.belongsTo(Preparations);
@@ -14,5 +15,6 @@ module.exports = {
     Customers,
     Preparations,
     Steps,
-    Vehicles
+    Vehicles,
+    Slots
 }

@@ -34,15 +34,6 @@ app.use('/api/afc/employee', require('./routes/employees'));
 app.use('/api/afc/preparation', require('./routes/preparations'));
 app.use('/api/afc/step', require('./routes/steps'));
 app.use('/api/afc/vehicle', require('./routes/vehicles'));
-
-// app.use('/api/spdev/product', require('./routes/products'));
-// app.use('/api/spdev/category', require('./routes/categories'));
-// app.use('/api/spdev/stock', require('./routes/stocks'));
-// app.use('/api/spdev/warehouse', require('./routes/warehouses'));
-// app.use('/api/spdev/store', require('./routes/stores'));
-// app.use('/api/spdev/order', require('./routes/orders'));
-// app.use('/api/spdev/orderdetails', require('./routes/orderDetails'));
-// app.use('/api/spdev/sale', require('./routes/sales'));
-// app.use('/api/spdev/permission', require('./routes/permissions'));
+app.use('/api/afc/slot', require('./routes/slots'));
 
 module.exports = app;

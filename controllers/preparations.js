@@ -1,4 +1,6 @@
 const models = require('../models/Index');
+var moment = require('moment');
+moment.locale('fr'); 
 
 // Create Preparation
 exports.createPreparation = (req, res) => {
@@ -8,7 +10,12 @@ exports.createPreparation = (req, res) => {
         req.body.model === "" || req.body.model === undefined ||
         req.body.year === "" || req.body.year === undefined ||
         req.body.kilometer === "" || req.body.kilometer === undefined ||
-        req.body.condition === "" || req.body.condition === undefined) {
+        req.body.condition === "" || req.body.condition === undefined ||
+        req.body.startDate === "" || req.body.startDate === undefined || req.body.startDate === null ||
+        req.body.endDate === "" || req.body.endDate === undefined || req.body.endDate === null ||
+        req.body.startTime === "" || req.body.startTime === undefined || req.body.startTime === null ||
+        req.body.endTime === "" || req.body.endTime === undefined || req.body.endTime === null ||
+        req.body.customerId === "" || req.body.customerId === undefined || req.body.customerId === null) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
     models.Preparations.create({
@@ -20,9 +27,23 @@ exports.createPreparation = (req, res) => {
         condition: req.body.condition,
         observationsDepot: req.body.observationsDepot,
         customerId: req.body.customerId,
-        state: 'planned'
+        state: 'planned',
+        start: moment(req.body.startDate + " " + req.body.startTime),
+        end: moment(req.body.endDate + " " + req.body.endTime),
+        billed: "no"
     })
-    .then((preparation) => res.status(201).json(preparation))
+    .then((preparation) => {
+        if(req.body.steps.length > 0) {
+            req.body.steps.forEach(step => {
+                models.Steps.create({
+                    preparationId: preparation.id,
+                    type: step,
+                    state: 'planned'
+                })
+            });
+        }
+        res.status(201).json(preparation)
+    })
     .catch(error => res.status(400).json({ error }));
 }
 
