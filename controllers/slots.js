@@ -29,6 +29,15 @@ exports.createSlot = (req, res) => {
 // Get All Slots
 exports.getAllSlots = (req, res) => {
     models.Slots.findAll()
-        .then((slots) => res.status(200).json(slots))
-        .catch(error => res.status(400).json({ error }));
+    .then((slots) => res.status(200).json(slots))
+    .catch(error => res.status(400).json({ error }));
+}
+
+// Get One Slot
+exports.getOneSlot = (req, res) => {
+    models.Slots.findOne({
+        where: { id: req.params.id }
+    })
+    .then(slot => res.status(200).json(slot))
+    .catch(error => res.status(400).json({ error }));
 }

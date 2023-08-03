@@ -14,3 +14,10 @@ exports.createStep = (req, res) => {
         .then((step) => res.status(201).json(step))
         .catch(error => res.status(400).json({ error }));
 }
+
+// Get All preparation's steps
+exports.getAllStepsByPrep = (req, res) => {
+    models.Steps.findAll({ where: {preparationId: req.params.id}})
+        .then((steps) => res.status(200).json(steps))
+        .catch(error => res.status(400).json({ error }));
+}
