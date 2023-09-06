@@ -10,7 +10,10 @@ const Employees = db.define('employees', {
     },
     userId: {
         type: Sequelize.INTEGER
-    }
+    },
+    privileges: {
+        type: Sequelize.STRING
+    },
 });
 
 module.exports = Employees;

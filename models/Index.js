@@ -5,6 +5,8 @@ const Preparations = require('./Preparations');
 const Steps = require('./Steps');
 const Vehicles = require('./Vehicles');
 const Slots = require('./Slots');
+const PrepRequests = require('./PrepRequests');
+const SlotRequests = require('./SlotRequests');
 
 Preparations.hasMany(Steps);
 Steps.belongsTo(Preparations);
@@ -16,5 +18,7 @@ module.exports = {
     Preparations,
     Steps,
     Vehicles,
-    Slots
+    Slots,
+    PrepRequests,
+    SlotRequests
 }

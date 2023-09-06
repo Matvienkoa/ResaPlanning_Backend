@@ -5,8 +5,8 @@ const passwordValidator = require('../middleware/passwordValidator');
 // Create Account Employee
 exports.createAccountEmployee = async (req, res) => {
     // Empty Inputs
-    if (req.body.login === "" || req.body.password === "" || req.body.password2 === "" || req.body.firstName === "" ||
-        req.body.login === undefined || req.body.password === undefined || req.body.password2 === undefined || req.body.firstName === undefined) {
+    if (req.body.login === "" || req.body.password === "" || req.body.password2 === "" || req.body.firstName === "" || req.body.privileges === "" ||
+        req.body.login === undefined || req.body.password === undefined || req.body.password2 === undefined || req.body.firstName === undefined || req.body.privileges === undefined) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
     // Bad Schema Password
@@ -36,6 +36,7 @@ exports.createAccountEmployee = async (req, res) => {
                                 userId: user.id,
                                 firstName: req.body.firstName,
                                 lastName: req.body.lastName,
+                                privileges: req.body.privileges
                             })
                             .then((employee) => res.status(201).json(employee))
                             .catch(error => res.status(400).json({ error }));
@@ -108,8 +109,8 @@ exports.createAccountCustomer = async (req, res) => {
 // Edit Account Employee
 exports.editAccountEmployee = async (req, res) => {
     // Empty Inputs
-    if (req.body.login === "" || req.body.firstName === "" ||
-        req.body.login === undefined || req.body.firstName === undefined) {
+    if (req.body.login === "" || req.body.firstName === "" || req.body.privileges === "" ||
+        req.body.login === undefined || req.body.firstName === undefined || req.body.privileges === undefined) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
     // Bad Schema Password
@@ -135,7 +136,8 @@ exports.editAccountEmployee = async (req, res) => {
                 .then((employee) => {
                     employee.update({
                         firstName: req.body.firstName,
-                        lastName: req.body.lastName
+                        lastName: req.body.lastName,
+                        privileges: req.body.privileges
                     })
                     .then((employee) => res.status(201).json(employee))
                     .catch(error => res.status(400).json({ error }));
@@ -155,7 +157,8 @@ exports.editAccountEmployee = async (req, res) => {
                         .then((employee) => {
                             employee.update({
                                 firstName: req.body.firstName,
-                                lastName: req.body.lastName
+                                lastName: req.body.lastName,
+                                privileges: req.body.privileges
                             })
                                 .then((employee) => res.status(201).json(employee))
                                 .catch(error => res.status(400).json({ error }));

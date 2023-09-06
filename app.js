@@ -35,5 +35,9 @@ app.use('/api/afc/preparation', require('./routes/preparations'));
 app.use('/api/afc/step', require('./routes/steps'));
 app.use('/api/afc/vehicle', require('./routes/vehicles'));
 app.use('/api/afc/slot', require('./routes/slots'));
+app.use('/api/afc/request', require('./routes/requests'));
+app.use('/api/afc/preprequest', require('./routes/prepRequests'));
+app.use('/api/afc/slotrequest', require('./routes/slotRequests'));
+app.use('/api/afc/billings', require('./routes/billings'));
 
 module.exports = app;
