@@ -40,7 +40,16 @@ const PrepRequests = db.define('prepRequests', {
     },
     steps: {
         type: Sequelize.STRING
-    }
+    },
+    company: {
+        type: Sequelize.STRING
+    },
+    firstName: {
+        type: Sequelize.STRING
+    },
+    lastName: {
+        type: Sequelize.STRING
+    },
 });
 
 module.exports = PrepRequests;

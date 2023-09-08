@@ -25,7 +25,16 @@ const SlotRequests = db.define('slotRequests', {
     },
     type: {
         type: Sequelize.STRING
-    }
+    },
+    company: {
+        type: Sequelize.STRING
+    },
+    firstName: {
+        type: Sequelize.STRING
+    },
+    lastName: {
+        type: Sequelize.STRING
+    },
 });
 
 module.exports = SlotRequests;
