@@ -123,7 +123,7 @@ exports.editAccountEmployee = async (req, res) => {
     }
     const userLogin = await models.Users.findOne({ where: { login: req.body.login } })
     if (userLogin && userLogin.id !== JSON.parse(req.params.id)) {
-        return res.status(400).json({ message: "Ce login existe déjà!" });
+        return res.status(400).json({ message: "Cet identifiant existe déjà, merci d'en choisir un autre" });
     }
     models.Users.findOne({ where: { id: req.params.id } })
     .then((user) => {
@@ -189,7 +189,7 @@ exports.editAccountCustomer = async (req, res) => {
     }
     const userLogin = await models.Users.findOne({ where: { login: req.body.login } })
     if (userLogin && userLogin.id !== JSON.parse(req.params.id)) {
-        return res.status(400).json({ message: "Ce login existe déjà!" });
+        return res.status(400).json({ message: "Cet identifiant existe déjà, merci d'en choisir un autre" });
     }
     models.Users.findOne({ where: { id: req.params.id } })
         .then((user) => {

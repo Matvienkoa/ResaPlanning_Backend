@@ -59,6 +59,10 @@ exports.validateSlotRequest = (req, res) => {
 
 // Refuse SlotRequest
 exports.refuseSlotRequest = (req, res) => {
+    // Empty Inputs
+    if (req.body.observationsDepot === "" || req.body.observationsDepot === undefined) {
+        return res.status(400).json({ message: "Merci de renseigner un motif de refus" });
+    }
     models.SlotRequests.findOne({ where: { id: req.params.id } })
         .then((slotR) => {
             slotR.update({

@@ -77,6 +77,10 @@ exports.validatePrepRequest = (req, res) => {
 
 // Refuse PrepRequest
 exports.refusePrepRequest = (req, res) => {
+    // Empty Inputs
+    if (req.body.observationsDepot === "" || req.body.observationsDepot === undefined) {
+        return res.status(400).json({ message: "Merci de renseigner un motif de refus" });
+    }
     models.PrepRequests.findOne({ where: { id: req.params.id } })
         .then((prepR) => {
             prepR.update({
