@@ -104,8 +104,14 @@ exports.deletePrepRequest = (req, res) => {
 
 // Get All Requests
 exports.getAllRequests = async (req, res) => {
-    let preps = await models.PrepRequests.findAll({ where: { customerId: req.params.id }})
-    let slots = await models.SlotRequests.findAll({ where: { customerId: req.params.id } })
+    let preps = await models.PrepRequests.findAll({ 
+        where: { customerId: req.params.id },
+        order: [['createdAt', 'ASC']]
+    })
+    let slots = await models.SlotRequests.findAll({ 
+        where: { customerId: req.params.id },
+        order: [['createdAt', 'ASC']]
+    })
     res.status(200).json({preps, slots})
 }
 

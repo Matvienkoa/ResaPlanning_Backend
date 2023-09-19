@@ -4,7 +4,7 @@ const preparationCtrl = require('../controllers/preparations');
 const multerImage = require('../middleware/multerImage');
 
 router.post('/', preparationCtrl.createPreparation);
-router.get('/', preparationCtrl.getAllPreparations);
+router.get('/start/:start/end/:end', preparationCtrl.getAllPreparations);
 router.get('/customer/:customerId', preparationCtrl.getAllPreparationsCustomer);
 router.get('/:id', preparationCtrl.getOnePreparation);
 router.put('/:id', preparationCtrl.editPreparation);

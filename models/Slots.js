@@ -19,7 +19,19 @@ const Slots = db.define('slots', {
     },
     end: {
         type: Sequelize.DATE
-    }
+    },
+    startMonth: {
+        type: Sequelize.STRING
+    },
+    endMonth: {
+        type: Sequelize.STRING
+    },
+    startYear: {
+        type: Sequelize.STRING
+    },
+    endYear: {
+        type: Sequelize.STRING
+    },
 });
 
 module.exports = Slots;

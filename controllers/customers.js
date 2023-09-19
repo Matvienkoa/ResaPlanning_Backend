@@ -61,9 +61,21 @@ exports.editCustomer = async (req, res) => {
 exports.deleteCustomer = (req, res) => {
     models.Customers.findOne({ where: { id: req.params.id } })
         .then((customer) => {
-            customer.destroy()
-            .then(() => res.status(200).json({ message: 'Client supprimé' }))
-            .catch(error => res.status(400).json({ error }));
+            if(customer.userId) {
+                models.Users.findOne({ where: { id: customer.userId } })
+                .then((user) => {
+                    user.destroy()
+                    .then(() => {
+                        customer.destroy()
+                        .then(() => res.status(200).json({ message: 'Client supprimé' }))
+                        .catch(error => res.status(400).json({ error }));
+                    })
+                })
+            } else {
+                customer.destroy()
+                .then(() => res.status(200).json({ message: 'Client supprimé' }))
+                .catch(error => res.status(400).json({ error }));
+            }
         })
 }
 
@@ -83,7 +95,7 @@ exports.getOneCustomerByUserId = (req, res) => {
 
 // Get All Customers
 exports.getAllCustomers = (req, res) => {
-    models.Customers.findAll()
+    models.Customers.findAll({ order: [['createdAt', 'DESC']] })
         .then((customers) => res.status(200).json(customers))
         .catch(error => res.status(400).json({ error }));
 }

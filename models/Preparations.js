@@ -56,6 +56,18 @@ const Preparations = db.define('preparations', {
     billed: {
         type: Sequelize.STRING
     },
+    startMonth: {
+        type: Sequelize.STRING
+    },
+    endMonth: {
+        type: Sequelize.STRING
+    },
+    startYear: {
+        type: Sequelize.STRING
+    },
+    endYear: {
+        type: Sequelize.STRING
+    },
 });
 
 module.exports = Preparations;

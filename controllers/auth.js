@@ -61,6 +61,7 @@ exports.login = (req, res) => {
                         userId: user.id,
                         accessAfc: user.afc,
                         accessMillenium: user.millenium,
+                        role: user.role,
                         token: jwt.sign(
                             { userId: user.id, accessAfc: user.afc, accessMillenium: user.millenium },
                             'RANDOM_TOKEN_SECRET',

@@ -27,7 +27,7 @@ exports.createVehicle = async (req, res) => {
                 }
             });
         }
-        return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires PD" });
+        return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
     // Same Immat
     const vehicleImmat = await models.Vehicles.findOne({
@@ -50,7 +50,7 @@ exports.createVehicle = async (req, res) => {
                 }
             });
         }
-        return res.status(400).json({ message: "Ce véhicule existe déjà dans le showcase !" });
+        return res.status(400).json({ message: "Ce véhicule existe déjà dans le showroom !" });
     }
     models.Vehicles.create({
         brand: req.body.brand,
@@ -90,7 +90,7 @@ exports.editVehicleInfos = async (req, res) => {
     // Same Immat
     const vehicleImmat = await models.Vehicles.findOne({ where: { immat: req.body.immat } })
     if (vehicleImmat && vehicleImmat.id !== JSON.parse(req.params.id)) {
-        return res.status(400).json({ message: "Ce véhicule existe déjà dans le showcase !" });
+        return res.status(400).json({ message: "Ce véhicule existe déjà dans le showroom !" });
     }
     models.Vehicles.findOne({ where: { id: req.params.id } })
     .then((vehicle) => {
@@ -436,7 +436,7 @@ exports.deleteVehicle = (req, res) => {
 // Get All Vehicles
 exports.getAllVehicles = (req, res) => {
     models.Vehicles.findAll({
-        order: [['createdAt', 'ASC']]
+        order: [['createdAt', 'DESC']]
     })
     .then((vehicles) => res.status(200).json(vehicles))
     .catch(error => res.status(400).json({ error }));

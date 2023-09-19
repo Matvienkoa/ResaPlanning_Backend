@@ -7,7 +7,7 @@ router.put('/:id', slotCtrl.editSlot);
 router.put('/drop/:id', slotCtrl.dropSlot);
 router.put('/size/:id', slotCtrl.sizeSlot);
 router.delete('/:id', slotCtrl.deleteSlot);
-router.get('/', slotCtrl.getAllSlots);
+router.get('/start/:start/end/:end', slotCtrl.getAllSlots);
 router.get('/:id', slotCtrl.getOneSlot);
 
 module.exports = router;
