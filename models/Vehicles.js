@@ -14,9 +14,6 @@ const Vehicles = db.define('vehicles', {
     kilometers: {
         type: Sequelize.STRING
     },
-    price: {
-        type: Sequelize.INTEGER
-    },
     photo1: {
         type: Sequelize.STRING
     },
@@ -33,6 +30,24 @@ const Vehicles = db.define('vehicles', {
         type: Sequelize.STRING
     },
     observations: {
+        type: Sequelize.STRING
+    },
+    marketPrice: {
+        type: Sequelize.INTEGER
+    },
+    publicPrice: {
+        type: Sequelize.INTEGER
+    },
+    purchasePrice: {
+        type: Sequelize.INTEGER
+    },
+    frevosPrice: {
+        type: Sequelize.INTEGER
+    },
+    frevos: {
+        type: Sequelize.STRING
+    },
+    firstHand: {
         type: Sequelize.STRING
     }
 });

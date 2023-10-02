@@ -20,25 +20,26 @@ exports.signup = async (req, res) => {
     models.Users.findOne({
         where: { login: req.body.login }
     })
-        .then((user) => {
-            if (!user) {
-                bcryptjs.hash(req.body.password, 10)
-                    .then(hash => {
-                        models.Users.create({
-                            login: req.body.login,
-                            password: hash,
-                            role: req.body.role,
-                            afc: req.body.afc,
-                            millenium: req.body.millenium
-                        })
-                        .then((user) => res.status(201).json({ user }))
-                        .catch(error => res.status(400).json({ error }));
+    .then((user) => {
+        if (!user) {
+            bcryptjs.hash(req.body.password, 10)
+                .then(hash => {
+                    models.Users.create({
+                        login: req.body.login,
+                        password: hash,
+                        role: req.body.role,
+                        afc: req.body.afc,
+                        millenium: req.body.millenium
                     })
-                    .catch(error => res.status(500).json({ error }));
-            } else {
-                return res.status(400).json({ message: "Cet identifiant existe déjà, merci d'en choisir un autre" });
-            }
-        })
+                    .then((user) => res.status(201).json({ user }))
+                    .catch(error => res.status(400).json({ error }));
+                })
+                .catch(error => res.status(500).json({ error }));
+        } else {
+            return res.status(409).json({ message: "Cet identifiant existe déjà, merci d'en choisir un autre" });
+        }
+    })
+    .catch(error => res.status(400).json({ error }));
 };
 
 // Login
@@ -55,7 +56,7 @@ exports.login = (req, res) => {
             bcryptjs.compare(req.body.password, user.password)
                 .then(valid => {
                     if (!valid) {
-                        return res.status(401).json({ message: 'Mot de passe incorrect' });
+                        return res.status(400).json({ message: 'Mot de passe incorrect' });
                     }
                     res.status(200).json({
                         userId: user.id,
@@ -63,7 +64,7 @@ exports.login = (req, res) => {
                         accessMillenium: user.millenium,
                         role: user.role,
                         token: jwt.sign(
-                            { userId: user.id, accessAfc: user.afc, accessMillenium: user.millenium },
+                            { userId: user.id, accessAfc: user.afc, accessMillenium: user.millenium, role: user.role },
                             'RANDOM_TOKEN_SECRET',
                             { expiresIn: '24H' }
                         )
@@ -71,5 +72,5 @@ exports.login = (req, res) => {
                 })
                 .catch(error => res.status(500).json({ error }));
         })
-        .catch(error => res.status(500).json({ error }));
+        .catch(error => res.status(400).json({ error }));
 };

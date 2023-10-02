@@ -32,6 +32,39 @@ const Slots = db.define('slots', {
     endYear: {
         type: Sequelize.STRING
     },
+    company: {
+        type: Sequelize.STRING
+    },
+    firstName: {
+        type: Sequelize.STRING
+    },
+    lastName: {
+        type: Sequelize.STRING
+    },
+    adress: {
+        type: Sequelize.STRING
+    },
+    adress2: {
+        type: Sequelize.STRING
+    },
+    zipCode: {
+        type: Sequelize.STRING
+    },
+    city: {
+        type: Sequelize.STRING
+    },
+    phone: {
+        type: Sequelize.STRING
+    },
+    mail: {
+        type: Sequelize.STRING
+    },
+    maker: {
+        type: Sequelize.STRING
+    },
+    duration: {
+        type: Sequelize.STRING
+    }
 });
 
 module.exports = Slots;

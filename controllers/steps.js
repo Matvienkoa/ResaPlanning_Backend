@@ -11,8 +11,8 @@ exports.createStep = (req, res) => {
         state: 'planned',
         preparationId: req.body.preparationId
     })
-        .then((step) => res.status(201).json(step))
-        .catch(error => res.status(400).json({ error }));
+    .then((step) => res.status(201).json(step))
+    .catch(error => res.status(400).json({ error }));
 }
 
 // Append Step
@@ -24,7 +24,7 @@ exports.appendStep = async (req, res) => {
     const steps = await models.Steps.findAll({ where: { preparationId: req.body.preparationId } })
     const index = steps.findIndex(s => s.type === req.body.type)
     if (index !== -1) {
-        return res.status(400).json({ message: "Cette étape existe déjà pour ce véhicule" });
+        return res.status(409).json({ message: "Cette étape existe déjà pour ce véhicule" });
     } else {
         models.Steps.create({
             type: req.body.type,
@@ -67,6 +67,7 @@ exports.editStateStep = (req, res) => {
         .then((step) => res.status(201).json(step))
         .catch(error => res.status(400).json({ error }));
     })
+    .catch(error => res.status(400).json({ error }));
 }
 
 // Delete Step
@@ -77,11 +78,12 @@ exports.deleteStep = (req, res) => {
         .then(() => res.status(200).json({ message: 'Etape supprimée' }))
         .catch(error => res.status(400).json({ error }));
     })
+    .catch(error => res.status(400).json({ error }));
 }
 
 // Get All preparation's steps
 exports.getAllStepsByPrep = (req, res) => {
     models.Steps.findAll({ where: {preparationId: req.params.id}})
-        .then((steps) => res.status(200).json(steps))
-        .catch(error => res.status(400).json({ error }));
+    .then((steps) => res.status(200).json(steps))
+    .catch(error => res.status(400).json({ error }));
 }

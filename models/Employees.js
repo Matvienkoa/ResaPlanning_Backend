@@ -13,7 +13,7 @@ const Employees = db.define('employees', {
     },
     privileges: {
         type: Sequelize.STRING
-    },
+    }
 });
 
 module.exports = Employees;

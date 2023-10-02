@@ -3,9 +3,11 @@ const fs = require('fs');
 var moment = require('moment');
 moment.locale('fr');
 const { Op } = require("sequelize");
+const sharp = require('sharp');
+const path = require('path');
 
 // Create Preparation
-exports.createPreparation = (req, res) => {
+exports.createPreparation = async (req, res) => {
     // Empty Inputs
     if (req.body.immat === "" || req.body.immat === undefined ||
         req.body.brand === "" || req.body.brand === undefined ||
@@ -16,12 +18,30 @@ exports.createPreparation = (req, res) => {
         req.body.startDate === "" || req.body.startDate === undefined || req.body.startDate === null ||
         req.body.endDate === "" || req.body.endDate === undefined || req.body.endDate === null ||
         req.body.startTime === "" || req.body.startTime === undefined || req.body.startTime === null ||
-        req.body.endTime === "" || req.body.endTime === undefined || req.body.endTime === null ||
         req.body.customerId === "" || req.body.customerId === undefined || req.body.customerId === null) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
-    if (moment(req.body.startDate + " " + req.body.startTime) >= moment(req.body.endDate + " " + req.body.endTime)) {
-        return res.status(400).json({ message: "Merci de renseigner une heure de fin ultérieure" });
+    let end = "";
+    if (req.body.endTime === "" || req.body.endTime === undefined || req.body.endTime === null) {
+        end = moment(req.body.endDate + " " + req.body.startTime).add(1, 'hours')
+        if (moment(req.body.startDate + " " + req.body.startTime) >= end) {
+            return res.status(400).json({ message: "Merci de renseigner une date de fin ultérieure" });
+        }
+    } else {
+        end = moment(req.body.endDate + " " + req.body.endTime)
+        if (moment(req.body.startDate + " " + req.body.startTime) >= end) {
+            return res.status(400).json({ message: "Merci de renseigner une date de fin ultérieure" });
+        }
+    }
+    let maker = req.body.maker;
+    if (maker === "" || maker === null || maker === undefined) {
+        maker = "Non attribué"
+    }
+    const customer = await models.Customers.findOne({
+        where: { id: req.body.customerId }
+    })
+    if (!customer) {
+        return res.status(400).json({ message: "Merci de renseigner un client existant" });
     }
     models.Preparations.create({
         immat: req.body.immat,
@@ -33,14 +53,24 @@ exports.createPreparation = (req, res) => {
         observationsCustomer: req.body.observationsCustomer,
         observationsDepot: req.body.observationsDepot,
         customerId: req.body.customerId,
+        company: customer.company,
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        adress: customer.adress,
+        adress2: customer.adress2,
+        zipCode: customer.zipCode,
+        city: customer.city,
+        phone: customer.phone,
+        mail: customer.mail,
         state: 'planned',
         start: moment(req.body.startDate + " " + req.body.startTime),
-        end: moment(req.body.endDate + " " + req.body.endTime),
+        end: end,
         startMonth: moment(req.body.startDate).format('MM'),
         endMonth: moment(req.body.endDate).format('MM'),
         startYear: moment(req.body.startDate).format('YYYY'),
         endYear: moment(req.body.endDate).format('YYYY'),
-        billed: "no"
+        billed: "no",
+        maker: maker
     })
     .then((preparation) => {
         if(req.body.steps.length > 0) {
@@ -69,12 +99,30 @@ exports.editPreparation = async (req, res) => {
         req.body.startDate === "" || req.body.startDate === undefined || req.body.startDate === null ||
         req.body.endDate === "" || req.body.endDate === undefined || req.body.endDate === null ||
         req.body.startTime === "" || req.body.startTime === undefined || req.body.startTime === null ||
-        req.body.endTime === "" || req.body.endTime === undefined || req.body.endTime === null ||
         req.body.customerId === "" || req.body.customerId === undefined || req.body.customerId === null) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
-    if (moment(req.body.startDate + " " + req.body.startTime) >= moment(req.body.endDate + " " + req.body.endTime)) {
-        return res.status(400).json({ message: "Merci de renseigner une date et heure de fin ultérieures" });
+    let end = "";
+    if (req.body.endTime === "" || req.body.endTime === undefined || req.body.endTime === null) {
+        end = moment(req.body.endDate + " " + req.body.startTime).add(1, 'hours')
+        if (moment(req.body.startDate + " " + req.body.startTime) >= end) {
+            return res.status(400).json({ message: "Merci de renseigner une date de fin ultérieure" });
+        }
+    } else {
+        end = moment(req.body.endDate + " " + req.body.endTime)
+        if (moment(req.body.startDate + " " + req.body.startTime) >= end) {
+            return res.status(400).json({ message: "Merci de renseigner une date de fin ultérieure" });
+        }
+    }
+    let maker = req.body.maker;
+    if (maker === "" || maker === null || maker === undefined) {
+        maker = "Non attribué"
+    }
+    const customer = await models.Customers.findOne({
+        where: { id: req.body.customerId }
+    })
+    if (!customer) {
+        return res.status(400).json({ message: "Merci de renseigner un client existant" });
     }
     models.Preparations.findOne({ where: { id: req.params.id } })
     .then((preparation) => {
@@ -87,25 +135,35 @@ exports.editPreparation = async (req, res) => {
             condition: req.body.condition,
             observationsDepot: req.body.observationsDepot,
             customerId: req.body.customerId,
+            company: customer.company,
+            firstName: customer.firstName,
+            lastName: customer.lastName,
+            adress: customer.adress,
+            adress2: customer.adress2,
+            zipCode: customer.zipCode,
+            city: customer.city,
+            phone: customer.phone,
+            mail: customer.mail,
             state: 'planned',
             start: moment(req.body.startDate + " " + req.body.startTime),
-            end: moment(req.body.endDate + " " + req.body.endTime),
+            end: end,
             startMonth: moment(req.body.startDate).format('MM'),
             endMonth: moment(req.body.endDate).format('MM'),
             startYear: moment(req.body.startDate).format('YYYY'),
             endYear: moment(req.body.endDate).format('YYYY'),
+            maker: maker
         })
         .then((newPreparation) => res.status(201).json(newPreparation))
         .catch(error => res.status(400).json({ error }));
     })
+    .catch(error => res.status(400).json({ error }));
 }
 
 // Add Photo to Preparation
-exports.addPhoto = (req, res) => {
+exports.addPhoto = async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: "Merci d'ajouter un fichier" });
     }
-    console.log(req.file, req.body)
     models.Preparations.findOne({ where: { id: req.params.id } })
         .then((preparation) => {
             // const protocol = req.protocol === 'https' ? 'https' : 'http';
@@ -124,31 +182,44 @@ exports.addPhoto = (req, res) => {
                                 }
                             )
                         }
+                        preparation.update({
+                            photo1: null
+                        })
                     }
-                    preparation.update({
-                        photo1: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-                    })
-                        .then((preparation) => res.status(201).json(preparation))
-                        .catch((error) => {
-                            if (req.file) {
-                                let filename = req.file.filename;
-                                if (filename !== undefined) {
-                                    fs.unlink(`images/${filename}`,
-                                        function (err) {
-                                            if (err) {
-                                                console.log('error');
-                                            } else {
-                                                console.log('fichier supprimé');
-                                            }
-                                        }
-                                    )
+                    sharp(req.file.buffer).resize({ width: 1000, height: 600, fit: 'inside' }).toFormat('webp').toBuffer()
+                        .then((resizedImageBuffer) => {
+                            const timestamp = Date.now();
+                            const fileName = `${timestamp}_${req.file.originalname}`;
+                            const resizedImagePath = path.join('images', fileName);
+                            fs.writeFile(resizedImagePath, resizedImageBuffer, (error) => {
+                                if (error) {
+                                    return res.status(500).json({ error: 'Erreur lors de l\'écriture du fichier' });
                                 }
-                            }
-                            res.status(400).json({ error })
-                        });
+                                preparation.update({
+                                    photo1: `${req.protocol}://${req.get('host')}/images/${fileName}`
+                                })
+                                .then((prep) => res.status(201).json(prep))
+                                .catch((error) => {
+                                    if (req.file) {
+                                        if (fileName !== undefined) {
+                                            fs.unlink(`images/${fileName}`,
+                                                function (err) {
+                                                    if (err) {
+                                                        console.log('error');
+                                                    } else {
+                                                        console.log('fichier supprimé');
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    }
+                                    res.status(400).json({ error })
+                                });
+                            })
+                        })
+                        .catch(error => res.status(500).json({ error }));
                     break;
                 case 'photo2':
-                    console.log(preparation.photo2)
                     if (preparation.photo2 !== null) {
                         let filename = preparation.photo2.split('/images/')[1];
                         if (filename !== undefined) {
@@ -162,28 +233,42 @@ exports.addPhoto = (req, res) => {
                                 }
                             )
                         }
+                        preparation.update({
+                            photo2: null
+                        })
                     }
-                    preparation.update({
-                        photo2: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-                    })
-                        .then((preparation) => res.status(201).json(preparation))
-                        .catch((error) => {
-                            if (req.file) {
-                                let filename = req.file.filename;
-                                if (filename !== undefined) {
-                                    fs.unlink(`images/${filename}`,
-                                        function (err) {
-                                            if (err) {
-                                                console.log('error');
-                                            } else {
-                                                console.log('fichier supprimé');
+                    sharp(req.file.buffer).resize({ width: 1000, height: 600, fit: 'inside' }).toFormat('webp').toBuffer()
+                        .then((resizedImageBuffer) => {
+                            const timestamp = Date.now();
+                            const fileName = `${timestamp}_${req.file.originalname}`;
+                            const resizedImagePath = path.join('images', fileName);
+                            fs.writeFile(resizedImagePath, resizedImageBuffer, (error) => {
+                                if (error) {
+                                    return res.status(500).json({ error: 'Erreur lors de l\'écriture du fichier' });
+                                }
+                                preparation.update({
+                                    photo2: `${req.protocol}://${req.get('host')}/images/${fileName}`
+                                })
+                                    .then((prep) => res.status(201).json(prep))
+                                    .catch((error) => {
+                                        if (req.file) {
+                                            if (fileName !== undefined) {
+                                                fs.unlink(`images/${fileName}`,
+                                                    function (err) {
+                                                        if (err) {
+                                                            console.log('error');
+                                                        } else {
+                                                            console.log('fichier supprimé');
+                                                        }
+                                                    }
+                                                )
                                             }
                                         }
-                                    )
-                                }
-                            }
-                            res.status(400).json({ error })
-                        });
+                                        res.status(400).json({ error })
+                                    });
+                            })
+                        })
+                        .catch(error => res.status(500).json({ error }));
                     break;
                 case 'photo3':
                     if (preparation.photo3 !== null) {
@@ -199,28 +284,42 @@ exports.addPhoto = (req, res) => {
                                 }
                             )
                         }
+                        preparation.update({
+                            photo3: null
+                        })
                     }
-                    preparation.update({
-                        photo3: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-                    })
-                        .then((preparation) => res.status(201).json(preparation))
-                        .catch((error) => {
-                            if (req.file) {
-                                let filename = req.file.filename;
-                                if (filename !== undefined) {
-                                    fs.unlink(`images/${filename}`,
-                                        function (err) {
-                                            if (err) {
-                                                console.log('error');
-                                            } else {
-                                                console.log('fichier supprimé');
+                    sharp(req.file.buffer).resize({ width: 1000, height: 600, fit: 'inside' }).toFormat('webp').toBuffer()
+                        .then((resizedImageBuffer) => {
+                            const timestamp = Date.now();
+                            const fileName = `${timestamp}_${req.file.originalname}`;
+                            const resizedImagePath = path.join('images', fileName);
+                            fs.writeFile(resizedImagePath, resizedImageBuffer, (error) => {
+                                if (error) {
+                                    return res.status(500).json({ error: 'Erreur lors de l\'écriture du fichier' });
+                                }
+                                preparation.update({
+                                    photo3: `${req.protocol}://${req.get('host')}/images/${fileName}`
+                                })
+                                    .then((prep) => res.status(201).json(prep))
+                                    .catch((error) => {
+                                        if (req.file) {
+                                            if (fileName !== undefined) {
+                                                fs.unlink(`images/${fileName}`,
+                                                    function (err) {
+                                                        if (err) {
+                                                            console.log('error');
+                                                        } else {
+                                                            console.log('fichier supprimé');
+                                                        }
+                                                    }
+                                                )
                                             }
                                         }
-                                    )
-                                }
-                            }
-                            res.status(400).json({ error })
-                        });
+                                        res.status(400).json({ error })
+                                    });
+                            })
+                        })
+                        .catch(error => res.status(500).json({ error }));
                     break;
                 case 'photo4':
                     if (preparation.photo4 !== null) {
@@ -236,28 +335,42 @@ exports.addPhoto = (req, res) => {
                                 }
                             )
                         }
+                        preparation.update({
+                            photo4: null
+                        })
                     }
-                    preparation.update({
-                        photo4: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-                    })
-                        .then((preparation) => res.status(201).json(preparation))
-                        .catch((error) => {
-                            if (req.file) {
-                                let filename = req.file.filename;
-                                if (filename !== undefined) {
-                                    fs.unlink(`images/${filename}`,
-                                        function (err) {
-                                            if (err) {
-                                                console.log('error');
-                                            } else {
-                                                console.log('fichier supprimé');
+                    sharp(req.file.buffer).resize({ width: 1000, height: 600, fit: 'inside' }).toFormat('webp').toBuffer()
+                        .then((resizedImageBuffer) => {
+                            const timestamp = Date.now();
+                            const fileName = `${timestamp}_${req.file.originalname}`;
+                            const resizedImagePath = path.join('images', fileName);
+                            fs.writeFile(resizedImagePath, resizedImageBuffer, (error) => {
+                                if (error) {
+                                    return res.status(500).json({ error: 'Erreur lors de l\'écriture du fichier' });
+                                }
+                                preparation.update({
+                                    photo4: `${req.protocol}://${req.get('host')}/images/${fileName}`
+                                })
+                                    .then((prep) => res.status(201).json(prep))
+                                    .catch((error) => {
+                                        if (req.file) {
+                                            if (fileName !== undefined) {
+                                                fs.unlink(`images/${fileName}`,
+                                                    function (err) {
+                                                        if (err) {
+                                                            console.log('error');
+                                                        } else {
+                                                            console.log('fichier supprimé');
+                                                        }
+                                                    }
+                                                )
                                             }
                                         }
-                                    )
-                                }
-                            }
-                            res.status(400).json({ error })
-                        });
+                                        res.status(400).json({ error })
+                                    });
+                            })
+                        })
+                        .catch(error => res.status(500).json({ error }));
                     break;
             }
         })
@@ -290,8 +403,8 @@ exports.deletePhoto = (req, res) => {
                     preparation.update({
                         photo1: null
                     })
-                        .then((preparation) => res.status(201).json(preparation))
-                        .catch(error => res.status(400).json({ error }));
+                    .then((preparation) => res.status(201).json(preparation))
+                    .catch(error => res.status(400).json({ error }));
                     break;
                 case 'photo2':
                     if (preparation.photo2 !== null) {
@@ -311,8 +424,8 @@ exports.deletePhoto = (req, res) => {
                     preparation.update({
                         photo2: null
                     })
-                        .then((preparation) => res.status(201).json(preparation))
-                        .catch(error => res.status(400).json({ error }));
+                    .then((preparation) => res.status(201).json(preparation))
+                    .catch(error => res.status(400).json({ error }));
                     break;
                 case 'photo3':
                     if (preparation.photo3 !== null) {
@@ -332,8 +445,8 @@ exports.deletePhoto = (req, res) => {
                     preparation.update({
                         photo3: null
                     })
-                        .then((preparation) => res.status(201).json(preparation))
-                        .catch(error => res.status(400).json({ error }));
+                    .then((preparation) => res.status(201).json(preparation))
+                    .catch(error => res.status(400).json({ error }));
                     break;
                 case 'photo4':
                     if (preparation.photo4 !== null) {
@@ -353,8 +466,8 @@ exports.deletePhoto = (req, res) => {
                     preparation.update({
                         photo4: null
                     })
-                        .then((preparation) => res.status(201).json(preparation))
-                        .catch(error => res.status(400).json({ error }));
+                    .then((preparation) => res.status(201).json(preparation))
+                    .catch(error => res.status(400).json({ error }));
                     break;
             }
         })
@@ -381,6 +494,7 @@ exports.dropPreparation = (req, res) => {
         .then((newPreparation) => res.status(201).json(newPreparation))
         .catch(error => res.status(400).json({ error }));
     })
+    .catch(error => res.status(400).json({ error }));
 }
 
 // Size Preparation
@@ -391,15 +505,16 @@ exports.sizePreparation = (req, res) => {
         return res.status(400).json({ message: "Un problème est survenu!" });
     }
     models.Preparations.findOne({ where: { id: req.params.id } })
-        .then((preparation) => {
-            preparation.update({
-                end: moment(preparation.end).add(req.body.deltaD, 'days').add(req.body.deltaM, 'milliseconds'),
-                endMonth: moment(preparation.end).add(req.body.deltaD, 'days').add(req.body.deltaM, 'milliseconds').format('MM'),
-                endYear: moment(preparation.end).add(req.body.deltaD, 'days').add(req.body.deltaM, 'milliseconds').format('YYYY')
-            })
-                .then((newPreparation) => res.status(201).json(newPreparation))
-                .catch(error => res.status(400).json({ error }));
+    .then((preparation) => {
+        preparation.update({
+            end: moment(preparation.end).add(req.body.deltaD, 'days').add(req.body.deltaM, 'milliseconds'),
+            endMonth: moment(preparation.end).add(req.body.deltaD, 'days').add(req.body.deltaM, 'milliseconds').format('MM'),
+            endYear: moment(preparation.end).add(req.body.deltaD, 'days').add(req.body.deltaM, 'milliseconds').format('YYYY')
         })
+        .then((newPreparation) => res.status(201).json(newPreparation))
+        .catch(error => res.status(400).json({ error }));
+    })
+    .catch(error => res.status(400).json({ error }));
 }
 
 // Validate Preparation
@@ -422,28 +537,30 @@ exports.validatePreparation = (req, res) => {
         })
         .catch(error => res.status(400).json({ error }));
     })
+    .catch(error => res.status(400).json({ error }));
 }
 
 // Invalidate Preparation
 exports.invalidatePreparation = (req, res) => {
     models.Preparations.findOne({ where: { id: req.params.id } })
-        .then((preparation) => {
-            preparation.update({
-                state: 'planned'
-            })
-                .then((newPrep) => {
-                    models.Steps.findAll({ where: { preparationId: newPrep.id } })
-                        .then((steps) => {
-                            steps.forEach(step => {
-                                step.update({
-                                    state: 'planned'
-                                })
-                            })
-                        })
-                    res.status(201).json(newPrep)
-                })
-                .catch(error => res.status(400).json({ error }));
+    .then((preparation) => {
+        preparation.update({
+            state: 'planned'
         })
+        .then((newPrep) => {
+            models.Steps.findAll({ where: { preparationId: newPrep.id } })
+            .then((steps) => {
+                steps.forEach(step => {
+                    step.update({
+                        state: 'planned'
+                    })
+                })
+            })
+            res.status(201).json(newPrep)
+        })
+        .catch(error => res.status(400).json({ error }));
+    })
+    .catch(error => res.status(400).json({ error }));
 }
 
 // Invoice Preparation
@@ -456,6 +573,7 @@ exports.invoicePreparation = (req, res) => {
         .then((prepBilled) => res.status(201).json(prepBilled))
         .catch(error => res.status(400).json({ error }));
     })
+    .catch(error => res.status(400).json({ error }));
 }
 
 // Delete Preparation
@@ -527,7 +645,9 @@ exports.deletePreparation = (req, res) => {
             .then(() => res.status(200).json({ message: 'Préparation supprimée' }))
             .catch(error => res.status(400).json({ error }));
         })
+        .catch(error => res.status(400).json({ error }));
     })
+    .catch(error => res.status(400).json({ error }));
 }
 
 // Get All Preparations
@@ -539,7 +659,6 @@ exports.getAllPreparations = (req, res) => {
     let startMonthPlus = moment(Date.parse(start)).add(1, 'month').format('MM')
     let endYear = moment(Date.parse(end)).format('YYYY')
     let endMonth = moment(Date.parse(end)).format('MM')
-    console.log(startYear, startMonth, endYear, endMonth)
     models.Preparations.findAll({
         where: {
             [Op.or]: [
@@ -556,17 +675,27 @@ exports.getAllPreparations = (req, res) => {
     .catch(error => res.status(400).json({ error }));
 }
 
-// Get All Preparations Customer
-exports.getAllPreparationsCustomer = async (req, res) => {
-    let prepsPlanned = await models.Preparations.findAll({ 
+// Get All Preparations Planned Customer
+exports.getAllPreparationsCustomerPlanned = (req, res) => {
+    models.Preparations.findAll({ 
         where: { customerId: req.params.customerId, state: 'planned'},
         order: [['createdAt', 'DESC']]
     })
-    let prepsCompleted = await models.Preparations.findAll({ 
-        where: { customerId: req.params.customerId, state: 'completed' },
+    .then((preps) => res.status(200).json(preps))
+    .catch(error => res.status(400).json({ error }));
+}
+
+// Get All Preparations Completed Customer
+exports.getAllPreparationsCustomerCompleted = (req, res) => {
+    let date = req.params.date;
+    let year = moment(Date.parse(date)).format('YYYY');
+    let month = moment(Date.parse(date)).format('MM');
+    models.Preparations.findAll({
+        where: { customerId: req.params.customerId, state: 'completed', endMonth: month, endYear: year },
         order: [['createdAt', 'DESC']]
     })
-    res.status(200).json({ prepsPlanned, prepsCompleted })
+    .then((preps) => res.status(200).json(preps))
+    .catch(error => res.status(400).json({ error }));
 }
 
 // Get One Preparation

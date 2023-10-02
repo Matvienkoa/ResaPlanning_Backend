@@ -20,34 +20,35 @@ exports.createAccountEmployee = async (req, res) => {
     models.Users.findOne({
         where: { login: req.body.login }
     })
-        .then((user) => {
-            if (!user) {
-                bcryptjs.hash(req.body.password, 10)
-                    .then(hash => {
-                        models.Users.create({
-                            login: req.body.login,
-                            password: hash,
-                            role: 'employee',
-                            afc: 'yes',
-                            millenium: 'no'
+    .then((user) => {
+        if (!user) {
+            bcryptjs.hash(req.body.password, 10)
+                .then(hash => {
+                    models.Users.create({
+                        login: req.body.login,
+                        password: hash,
+                        role: 'employee',
+                        afc: 'yes',
+                        millenium: 'no'
+                    })
+                    .then((user) => {
+                        models.Employees.create({
+                            userId: user.id,
+                            firstName: req.body.firstName,
+                            lastName: req.body.lastName,
+                            privileges: req.body.privileges
                         })
-                        .then((user) => {
-                            models.Employees.create({
-                                userId: user.id,
-                                firstName: req.body.firstName,
-                                lastName: req.body.lastName,
-                                privileges: req.body.privileges
-                            })
-                            .then((employee) => res.status(201).json(employee))
-                            .catch(error => res.status(400).json({ error }));
-                        })
+                        .then((employee) => res.status(201).json(employee))
                         .catch(error => res.status(400).json({ error }));
                     })
-                    .catch(error => res.status(500).json({ error }));
-            } else {
-                return res.status(400).json({ message: "Cet identifiant existe déjà, merci d'en choisir un autre" });
-            }
-        })
+                    .catch(error => res.status(400).json({ error }));
+                })
+                .catch(error => res.status(500).json({ error }));
+        } else {
+            return res.status(409).json({ message: "Cet identifiant existe déjà, merci d'en choisir un autre" });
+        }
+    })
+    .catch(error => res.status(400).json({ error }));
 };
 
 // Create Account Customer
@@ -73,37 +74,38 @@ exports.createAccountCustomer = async (req, res) => {
         return res.status(400).json({ message: "Merci de sélectionner un client existant" });
     }
     if (customer.account === 'yes') {
-        return res.status(400).json({ message: "Ce client a déjà un compte de connexion" });
+        return res.status(409).json({ message: "Ce client a déjà un compte de connexion" });
     }
     models.Users.findOne({
         where: { login: req.body.login }
     })
-        .then((user) => {
-            if (!user) {
-                bcryptjs.hash(req.body.password, 10)
-                    .then(hash => {
-                        models.Users.create({
-                            login: req.body.login,
-                            password: hash,
-                            role: 'customer',
-                            afc: req.body.afc,
-                            millenium: req.body.millenium
+    .then((user) => {
+        if (!user) {
+            bcryptjs.hash(req.body.password, 10)
+                .then(hash => {
+                    models.Users.create({
+                        login: req.body.login,
+                        password: hash,
+                        role: 'customer',
+                        afc: req.body.afc,
+                        millenium: req.body.millenium
+                    })
+                    .then((user) => {
+                        customer.update({
+                            userId: user.id,
+                            account: 'yes'
                         })
-                        .then((user) => {
-                            customer.update({
-                                userId: user.id,
-                                account: 'yes'
-                            })
-                            .then((newCustomer) => res.status(201).json({ newCustomer }))
-                            .catch(error => res.status(400).json({ error }));
-                        })
+                        .then((newCustomer) => res.status(201).json({ newCustomer }))
                         .catch(error => res.status(400).json({ error }));
                     })
-                    .catch(error => res.status(500).json({ error }));
-            } else {
-                return res.status(400).json({ message: "Cet identifiant existe déjà, merci d'en choisir un autre" });
-            }
-        })
+                    .catch(error => res.status(400).json({ error }));
+                })
+                .catch(error => res.status(500).json({ error }));
+        } else {
+            return res.status(409).json({ message: "Cet identifiant existe déjà, merci d'en choisir un autre" });
+        }
+    })
+    .catch(error => res.status(400).json({ error }));
 };
 
 // Edit Account Employee
@@ -123,7 +125,7 @@ exports.editAccountEmployee = async (req, res) => {
     }
     const userLogin = await models.Users.findOne({ where: { login: req.body.login } })
     if (userLogin && userLogin.id !== JSON.parse(req.params.id)) {
-        return res.status(400).json({ message: "Cet identifiant existe déjà, merci d'en choisir un autre" });
+        return res.status(409).json({ message: "Cet identifiant existe déjà, merci d'en choisir un autre" });
     }
     models.Users.findOne({ where: { id: req.params.id } })
     .then((user) => {
@@ -160,8 +162,8 @@ exports.editAccountEmployee = async (req, res) => {
                                 lastName: req.body.lastName,
                                 privileges: req.body.privileges
                             })
-                                .then((employee) => res.status(201).json(employee))
-                                .catch(error => res.status(400).json({ error }));
+                            .then((employee) => res.status(201).json(employee))
+                            .catch(error => res.status(400).json({ error }));
                         })
                         .catch(error => res.status(400).json({ error }));
                 })
@@ -189,7 +191,7 @@ exports.editAccountCustomer = async (req, res) => {
     }
     const userLogin = await models.Users.findOne({ where: { login: req.body.login } })
     if (userLogin && userLogin.id !== JSON.parse(req.params.id)) {
-        return res.status(400).json({ message: "Cet identifiant existe déjà, merci d'en choisir un autre" });
+        return res.status(409).json({ message: "Cet identifiant existe déjà, merci d'en choisir un autre" });
     }
     models.Users.findOne({ where: { id: req.params.id } })
         .then((user) => {

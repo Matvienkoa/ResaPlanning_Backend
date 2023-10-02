@@ -1,15 +1,19 @@
 const models = require('../models/Index');
-const fs = require('fs');
+const fs = require('fs').promises;
+const sharp = require('sharp');
+const path = require('path');
 
 // Create Vehicle
 exports.createVehicle = async (req, res) => {
-    console.log(req.files)
     // Empty Inputs
     if (req.body.brand === "" || req.body.brand === undefined ||
         req.body.model === "" || req.body.model === undefined ||
         req.body.year === "" || req.body.year === undefined ||
         req.body.kilometers === "" || req.body.kilometers === undefined ||
-        req.body.price === "" || req.body.price === undefined ||
+        req.body.marketPrice === "" || req.body.marketPrice === undefined || req.body.marketPrice === null ||
+        req.body.publicPrice === "" || req.body.publicPrice === undefined || req.body.publicPrice === null ||
+        req.body.purchasePrice === "" || req.body.purchasePrice === undefined || req.body.purchasePrice === null ||
+        req.body.firstHand === "" || req.body.firstHand === undefined ||
         req.body.immat === "" || req.body.immat === undefined) {
         if (req.files) {
             req.files.forEach(file => {
@@ -50,31 +54,61 @@ exports.createVehicle = async (req, res) => {
                 }
             });
         }
-        return res.status(400).json({ message: "Ce véhicule existe déjà dans le showroom !" });
+        return res.status(409).json({ message: "Ce véhicule existe déjà dans le showroom !" });
     }
-    models.Vehicles.create({
-        brand: req.body.brand,
-        model: req.body.model,
-        year: req.body.year,
-        kilometers: req.body.kilometers,
-        price: req.body.price,
-        immat: req.body.immat,
-        observations: req.body.observations,
-        photo1: req.files[0] ?
-        `${req.protocol}://${req.get('host')}/images/${req.files[0].filename}`
-        : null,
-        photo2: req.files[1] ?
-        `${req.protocol}://${req.get('host')}/images/${req.files[1].filename}`
-        : null,
-        photo3: req.files[2] ?
-        `${req.protocol}://${req.get('host')}/images/${req.files[2].filename}`
-        : null,
-        photo4: req.files[3] ?
-        `${req.protocol}://${req.get('host')}/images/${req.files[3].filename}`
-        : null,
-    })
-    .then((vehicle) => res.status(201).json(vehicle))
-    .catch(error => res.status(400).json({ error }));
+    const imgs = [];
+    const promises = req.files.map(file => {
+        return sharp(file.buffer)
+            .resize({ width: 1000, height: 600, fit: 'inside' })
+            .toFormat('webp')
+            .toBuffer()
+            .then((resizedImageBuffer) => {
+                const timestamp = Date.now();
+                const fileName = `${timestamp}_${file.originalname}`;
+                const resizedImagePath = path.join('images', fileName);
+                return fs.writeFile(resizedImagePath, resizedImageBuffer)
+                    .then(() => {
+                        imgs.push(fileName);
+                    });
+            });
+    });
+    Promise.all(promises)
+        .then(() => {
+            console.log('Tous les fichiers ont été traités avec succès.');
+            console.log('Noms des fichiers redimensionnés :', imgs);
+            models.Vehicles.create({
+                brand: req.body.brand,
+                model: req.body.model,
+                year: req.body.year,
+                kilometers: req.body.kilometers * 100,
+                marketPrice: req.body.marketPrice * 100,
+                publicPrice: req.body.publicPrice * 100,
+                purchasePrice: req.body.purchasePrice * 100,
+                frevos: req.body.frevos,
+                frevosPrice: req.body.frevosPrice * 100,
+                firstHand: req.body.firstHand,
+                immat: req.body.immat,
+                observations: req.body.observations,
+                photo1: imgs[0] ?
+                    `${req.protocol}://${req.get('host')}/images/${imgs[0]}`
+                    : null,
+                photo2: imgs[1] ?
+                    `${req.protocol}://${req.get('host')}/images/${imgs[1]}`
+                    : null,
+                photo3: imgs[2] ?
+                    `${req.protocol}://${req.get('host')}/images/${imgs[2]}`
+                    : null,
+                photo4: imgs[3] ?
+                    `${req.protocol}://${req.get('host')}/images/${imgs[3]}`
+                    : null,
+            })
+                .then((vehicle) => res.status(201).json(vehicle))
+                .catch(error => res.status(400).json({ error }));
+        })
+        .catch(error => {
+            console.error('Erreur lors du traitement des fichiers :', error);
+            res.status(500).json({ error: 'Erreur lors du traitement des fichiers' });
+        });
 }
 
 // Edit Vehicles Infos
@@ -83,14 +117,17 @@ exports.editVehicleInfos = async (req, res) => {
         req.body.model === "" || req.body.model === undefined ||
         req.body.year === "" || req.body.year === undefined ||
         req.body.kilometers === "" || req.body.kilometers === undefined ||
-        req.body.price === "" || req.body.price === undefined ||
+        req.body.marketPrice === "" || req.body.marketPrice === undefined || req.body.marketPrice === null ||
+        req.body.publicPrice === "" || req.body.publicPrice === undefined || req.body.publicPrice === null ||
+        req.body.purchasePrice === "" || req.body.purchasePrice === undefined || req.body.purchasePrice === null ||
+        req.body.firstHand === "" || req.body.firstHand === undefined ||
         req.body.immat === "" || req.body.immat === undefined) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
     // Same Immat
     const vehicleImmat = await models.Vehicles.findOne({ where: { immat: req.body.immat } })
     if (vehicleImmat && vehicleImmat.id !== JSON.parse(req.params.id)) {
-        return res.status(400).json({ message: "Ce véhicule existe déjà dans le showroom !" });
+        return res.status(409).json({ message: "Ce véhicule existe déjà dans le showroom !" });
     }
     models.Vehicles.findOne({ where: { id: req.params.id } })
     .then((vehicle) => {
@@ -99,7 +136,12 @@ exports.editVehicleInfos = async (req, res) => {
             model: req.body.model,
             year: req.body.year,
             kilometers: req.body.kilometers,
-            price: req.body.price,
+            marketPrice: req.body.marketPrice * 100,
+            publicPrice: req.body.publicPrice * 100,
+            purchasePrice: req.body.purchasePrice * 100,
+            frevos: req.body.frevos,
+            frevosPrice: req.body.frevosPrice * 100,
+            firstHand: req.body.firstHand,
             immat: req.body.immat,
             observations: req.body.observations
         })
@@ -110,7 +152,7 @@ exports.editVehicleInfos = async (req, res) => {
 }
 
 // Edit Photo Vehicle
-exports.editVehiclePhoto = (req, res) => {
+exports.editVehiclePhoto = async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: "Merci d'ajouter un fichier" });
     }
@@ -131,28 +173,41 @@ exports.editVehiclePhoto = (req, res) => {
                             }
                         )
                     }
+                    vehicle.update({
+                        photo1: null
+                    })
                 }
-                vehicle.update({
-                    photo1: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-                })
-                .then((vehicle) => res.status(201).json(vehicle))
-                .catch((error) => {
-                    if (req.file) {
-                        let filename = req.file.filename;
-                        if (filename !== undefined) {
-                            fs.unlink(`images/${filename}`,
-                                function (err) {
-                                    if (err) {
-                                        console.log('error');
-                                    } else {
-                                        console.log('fichier supprimé');
-                                    }
+                sharp(req.file.buffer).resize({width: 1000, height: 600, fit: 'inside'}).toFormat('webp').toBuffer()
+                .then((resizedImageBuffer) => {
+                    const timestamp = Date.now();
+                    const fileName = `${timestamp}_${req.file.originalname}`;
+                    const resizedImagePath = path.join('images', fileName)
+                    fs.writeFile(resizedImagePath, resizedImageBuffer)
+                    .then(() => {
+                        vehicle.update({
+                            photo1: `${req.protocol}://${req.get('host')}/images/${fileName}`
+                        })
+                        .then((vehicle) => res.status(201).json(vehicle))
+                        .catch((error) => {
+                            if (req.file) {
+                                if (fileName !== undefined) {
+                                    fs.unlink(`images/${fileName}`,
+                                        function (err) {
+                                            if (err) {
+                                                console.log('error');
+                                            } else {
+                                                console.log('fichier supprimé');
+                                            }
+                                        }
+                                    )
                                 }
-                            )
-                        }
-                    }
-                    res.status(400).json({ error })
-                });
+                            }
+                            res.status(400).json({ error })
+                        });
+                    })
+                    .catch(error => res.status(500).json({ error }));
+                })
+                .catch(error => res.status(500).json({ error }));
                 break;
             case 'photo2':
                 if (vehicle.photo2 !== null) {
@@ -168,28 +223,41 @@ exports.editVehiclePhoto = (req, res) => {
                             }
                         )
                     }
+                    vehicle.update({
+                        photo2: null
+                    })
                 }
-                vehicle.update({
-                    photo2: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-                })
-                .then((vehicle) => res.status(201).json(vehicle))
-                .catch((error) => {
-                    if (req.file) {
-                        let filename = req.file.filename;
-                        if (filename !== undefined) {
-                            fs.unlink(`images/${filename}`,
-                                function (err) {
-                                    if (err) {
-                                        console.log('error');
-                                    } else {
-                                        console.log('fichier supprimé');
+                sharp(req.file.buffer).resize({ width: 1000, height: 600, fit: 'inside' }).toFormat('webp').toBuffer()
+                .then((resizedImageBuffer) => {
+                    const timestamp = Date.now();
+                    const fileName = `${timestamp}_${req.file.originalname}`;
+                    const resizedImagePath = path.join('images', fileName)
+                    fs.writeFile(resizedImagePath, resizedImageBuffer)
+                        .then(() => {
+                            vehicle.update({
+                                photo2: `${req.protocol}://${req.get('host')}/images/${fileName}`
+                            })
+                                .then((vehicle) => res.status(201).json(vehicle))
+                                .catch((error) => {
+                                    if (req.file) {
+                                        if (fileName !== undefined) {
+                                            fs.unlink(`images/${fileName}`,
+                                                function (err) {
+                                                    if (err) {
+                                                        console.log('error');
+                                                    } else {
+                                                        console.log('fichier supprimé');
+                                                    }
+                                                }
+                                            )
+                                        }
                                     }
-                                }
-                            )
-                        }
-                    }
-                    res.status(400).json({ error })
-                });
+                                    res.status(400).json({ error })
+                                });
+                        })
+                        .catch(error => res.status(500).json({ error }));
+                })
+                .catch(error => res.status(500).json({ error }));
                 break;
             case 'photo3':
                 if (vehicle.photo3 !== null) {
@@ -205,28 +273,41 @@ exports.editVehiclePhoto = (req, res) => {
                             }
                         )
                     }
+                    vehicle.update({
+                        photo3: null
+                    })
                 }
-                vehicle.update({
-                    photo3: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-                })
-                .then((vehicle) => res.status(201).json(vehicle))
-                .catch((error) => {
-                    if (req.file) {
-                        let filename = req.file.filename;
-                        if (filename !== undefined) {
-                            fs.unlink(`images/${filename}`,
-                                function (err) {
-                                    if (err) {
-                                        console.log('error');
-                                    } else {
-                                        console.log('fichier supprimé');
+                sharp(req.file.buffer).resize({ width: 1000, height: 600, fit: 'inside' }).toFormat('webp').toBuffer()
+                .then((resizedImageBuffer) => {
+                    const timestamp = Date.now();
+                    const fileName = `${timestamp}_${req.file.originalname}`;
+                    const resizedImagePath = path.join('images', fileName)
+                    fs.writeFile(resizedImagePath, resizedImageBuffer)
+                        .then(() => {
+                            vehicle.update({
+                                photo3: `${req.protocol}://${req.get('host')}/images/${fileName}`
+                            })
+                                .then((vehicle) => res.status(201).json(vehicle))
+                                .catch((error) => {
+                                    if (req.file) {
+                                        if (fileName !== undefined) {
+                                            fs.unlink(`images/${fileName}`,
+                                                function (err) {
+                                                    if (err) {
+                                                        console.log('error');
+                                                    } else {
+                                                        console.log('fichier supprimé');
+                                                    }
+                                                }
+                                            )
+                                        }
                                     }
-                                }
-                            )
-                        }
-                    }
-                    res.status(400).json({ error })
-                });
+                                    res.status(400).json({ error })
+                                });
+                        })
+                        .catch(error => res.status(500).json({ error }));
+                })
+                .catch(error => res.status(500).json({ error }));
                 break;
             case 'photo4':
                 if (vehicle.photo4 !== null) {
@@ -242,28 +323,41 @@ exports.editVehiclePhoto = (req, res) => {
                             }
                         )
                     }
+                    vehicle.update({
+                        photo4: null
+                    })
                 }
-                vehicle.update({
-                    photo4: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-                })
-                .then((vehicle) => res.status(201).json(vehicle))
-                .catch((error) => {
-                    if (req.file) {
-                        let filename = req.file.filename;
-                        if (filename !== undefined) {
-                            fs.unlink(`images/${filename}`,
-                                function (err) {
-                                    if (err) {
-                                        console.log('error');
-                                    } else {
-                                        console.log('fichier supprimé');
+                sharp(req.file.buffer).resize({ width: 1000, height: 600, fit: 'inside' }).toFormat('webp').toBuffer()
+                .then((resizedImageBuffer) => {
+                    const timestamp = Date.now();
+                    const fileName = `${timestamp}_${req.file.originalname}`;
+                    const resizedImagePath = path.join('images', fileName)
+                    fs.writeFile(resizedImagePath, resizedImageBuffer)
+                        .then(() => {
+                            vehicle.update({
+                                photo4: `${req.protocol}://${req.get('host')}/images/${fileName}`
+                            })
+                                .then((vehicle) => res.status(201).json(vehicle))
+                                .catch((error) => {
+                                    if (req.file) {
+                                        if (fileName !== undefined) {
+                                            fs.unlink(`images/${fileName}`,
+                                                function (err) {
+                                                    if (err) {
+                                                        console.log('error');
+                                                    } else {
+                                                        console.log('fichier supprimé');
+                                                    }
+                                                }
+                                            )
+                                        }
                                     }
-                                }
-                            )
-                        }
-                    }
-                    res.status(400).json({ error })
-                });
+                                    res.status(400).json({ error })
+                                });
+                        })
+                        .catch(error => res.status(500).json({ error }));
+                })
+                .catch(error => res.status(500).json({ error }));
                 break;
         }
     })
@@ -431,6 +525,7 @@ exports.deleteVehicle = (req, res) => {
         .then(() => res.status(200).json({ message: 'Véhicule supprimé' }))
         .catch(error => res.status(400).json({ error }));
     })
+    .catch(error => res.status(400).json({ error }));
 }
 
 // Get All Vehicles

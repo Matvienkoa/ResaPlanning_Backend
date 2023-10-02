@@ -50,6 +50,27 @@ const PrepRequests = db.define('prepRequests', {
     lastName: {
         type: Sequelize.STRING
     },
+    adress: {
+        type: Sequelize.STRING
+    },
+    adress2: {
+        type: Sequelize.STRING
+    },
+    zipCode: {
+        type: Sequelize.STRING
+    },
+    city: {
+        type: Sequelize.STRING
+    },
+    phone: {
+        type: Sequelize.STRING
+    },
+    mail: {
+        type: Sequelize.STRING
+    },
+    photo: {
+        type: Sequelize.STRING
+    },
 });
 
 module.exports = PrepRequests;
