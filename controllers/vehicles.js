@@ -33,6 +33,29 @@ exports.createVehicle = async (req, res) => {
         }
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
+    // // Bad Numbers
+    if (req.body.marketPrice <= 0 ||
+        req.body.publicPrice <= 0 ||
+        req.body.purchasePrice <= 0 ||
+        req.body.frevosPrice <= 0) {
+        if (req.files) {
+            req.files.forEach(file => {
+                let filename = file.filename;
+                if (filename !== undefined) {
+                    fs.unlink(`images/${filename}`,
+                        function (err) {
+                            if (err) {
+                                console.log('error');
+                            } else {
+                                console.log('fichier supprimé');
+                            }
+                        }
+                    )
+                }
+            });
+        }
+        return res.status(400).json({ message: "Les prix renseignés doivent être supérieurs à 0" });
+    }
     // Same Immat
     const vehicleImmat = await models.Vehicles.findOne({
         where: {immat: req.body.immat}
@@ -74,13 +97,11 @@ exports.createVehicle = async (req, res) => {
     });
     Promise.all(promises)
         .then(() => {
-            console.log('Tous les fichiers ont été traités avec succès.');
-            console.log('Noms des fichiers redimensionnés :', imgs);
             models.Vehicles.create({
                 brand: req.body.brand,
                 model: req.body.model,
                 year: req.body.year,
-                kilometers: req.body.kilometers * 100,
+                kilometers: req.body.kilometers,
                 marketPrice: req.body.marketPrice * 100,
                 publicPrice: req.body.publicPrice * 100,
                 purchasePrice: req.body.purchasePrice * 100,
@@ -123,6 +144,13 @@ exports.editVehicleInfos = async (req, res) => {
         req.body.firstHand === "" || req.body.firstHand === undefined ||
         req.body.immat === "" || req.body.immat === undefined) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
+    }
+    // // Bad Numbers
+    if (req.body.marketPrice <= 0 ||
+        req.body.publicPrice <= 0 ||
+        req.body.purchasePrice <= 0 ||
+        req.body.frevosPrice <= 0) {
+        return res.status(400).json({ message: "Les prix renseignés doivent être supérieurs à 0" });
     }
     // Same Immat
     const vehicleImmat = await models.Vehicles.findOne({ where: { immat: req.body.immat } })
