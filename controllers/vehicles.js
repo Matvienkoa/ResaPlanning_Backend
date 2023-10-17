@@ -37,7 +37,9 @@ exports.createVehicle = async (req, res) => {
     if (req.body.marketPrice <= 0 ||
         req.body.publicPrice <= 0 ||
         req.body.purchasePrice <= 0 ||
-        req.body.frevosPrice <= 0) {
+        (req.body.frevosPrice !== "" && req.body.frevosPrice <= 0) ||
+        (req.body.frevosPrice !== undefined && req.body.frevosPrice <= 0) ||
+        (req.body.frevosPrice !== null && req.body.frevosPrice <= 0)) {
         if (req.files) {
             req.files.forEach(file => {
                 let filename = file.filename;
@@ -149,7 +151,9 @@ exports.editVehicleInfos = async (req, res) => {
     if (req.body.marketPrice <= 0 ||
         req.body.publicPrice <= 0 ||
         req.body.purchasePrice <= 0 ||
-        req.body.frevosPrice <= 0) {
+        (req.body.frevosPrice !== "" && req.body.frevosPrice <= 0) ||
+        (req.body.frevosPrice !== undefined && req.body.frevosPrice <= 0) ||
+        (req.body.frevosPrice !== null && req.body.frevosPrice <= 0)) {
         return res.status(400).json({ message: "Les prix renseignés doivent être supérieurs à 0" });
     }
     // Same Immat
