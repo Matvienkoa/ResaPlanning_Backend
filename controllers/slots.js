@@ -14,15 +14,18 @@ exports.createSlot = async (req, res) => {
         req.body.duration === "" || req.body.duration === undefined) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
+    let startTime = moment(req.body.startTime.hours + ":" + req.body.startTime.minutes + ":00", "HH:mm").format("HH:mm")
+    let start = moment(req.body.startDate + " " + startTime)
     let end = "";
     if (req.body.endTime === "" || req.body.endTime === undefined || req.body.endTime === null) {
-        end = moment(req.body.endDate + " " + req.body.startTime).add(3, 'hours')
-        if (moment(req.body.startDate + " " + req.body.startTime) >= end) {
+        end = moment(req.body.endDate + " " + startTime).add(3, 'hours')
+        if (start >= end) {
             return res.status(400).json({ message: "Merci de renseigner une date de fin ultérieure" });
         }
     } else {
-        end = moment(req.body.endDate + " " + req.body.endTime)
-        if (moment(req.body.startDate + " " + req.body.startTime) >= end) {
+        let endTime = moment(req.body.endTime.hours + ":" + req.body.endTime.minutes + ":00", "HH:mm").format("HH:mm")
+        end = moment(req.body.endDate + " " + endTime)
+        if (start >= end) {
             return res.status(400).json({ message: "Merci de renseigner une date de fin ultérieure" });
         }
     }
@@ -50,7 +53,7 @@ exports.createSlot = async (req, res) => {
         place: req.body.place,
         observationsCustomer: req.body.observationsCustomer,
         observationsDepot: req.body.observationsDepot,
-        start: moment(req.body.startDate + " " + req.body.startTime),
+        start: start,
         end: end,
         startMonth: moment(req.body.startDate).format('MM'),
         endMonth: moment(req.body.endDate).format('MM'),
@@ -74,15 +77,18 @@ exports.editSlot = async (req, res) => {
         req.body.duration === "" || req.body.duration === undefined) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
+    let startTime = moment(req.body.startTime.hours + ":" + req.body.startTime.minutes + ":00", "HH:mm").format("HH:mm")
+    let start = moment(req.body.startDate + " " + startTime)
     let end = "";
     if (req.body.endTime === "" || req.body.endTime === undefined || req.body.endTime === null) {
-        end = moment(req.body.endDate + " " + req.body.startTime).add(3, 'hours')
-        if (moment(req.body.startDate + " " + req.body.startTime) >= end) {
+        end = moment(req.body.endDate + " " + startTime).add(3, 'hours')
+        if (start >= end) {
             return res.status(400).json({ message: "Merci de renseigner une date de fin ultérieure" });
         }
     } else {
-        end = moment(req.body.endDate + " " + req.body.endTime)
-        if (moment(req.body.startDate + " " + req.body.startTime) >= end) {
+        let endTime = moment(req.body.endTime.hours + ":" + req.body.endTime.minutes + ":00", "HH:mm").format("HH:mm")
+        end = moment(req.body.endDate + " " + endTime)
+        if (start >= end) {
             return res.status(400).json({ message: "Merci de renseigner une date de fin ultérieure" });
         }
     }
@@ -112,7 +118,7 @@ exports.editSlot = async (req, res) => {
             place: req.body.place,
             observationsCustomer: req.body.observationsCustomer,
             observationsDepot: req.body.observationsDepot,
-            start: moment(req.body.startDate + " " + req.body.startTime),
+            start: start,
             end: end,
             startMonth: moment(req.body.startDate).format('MM'),
             endMonth: moment(req.body.endDate).format('MM'),
@@ -179,6 +185,16 @@ exports.deleteSlot = (req, res) => {
         .catch(error => res.status(400).json({ error }));
     })
     .catch(error => res.status(400).json({ error }));
+}
+
+// Get All Slots Customer
+exports.getAllSlotsCustomer = (req, res) => {
+    models.Slots.findAll({
+        where: { customerId: req.params.customerId },
+        order: [['createdAt', 'DESC']]
+    })
+        .then((preps) => res.status(200).json(preps))
+        .catch(error => res.status(400).json({ error }));
 }
 
 // Get All Slots

@@ -10,5 +10,6 @@ router.put('/size/:id', checkJWT, checkUser, slotCtrl.sizeSlot);
 router.delete('/:id', checkJWT, checkUser, slotCtrl.deleteSlot);
 router.get('/start/:start/end/:end', checkJWT, checkUser, slotCtrl.getAllSlots);
 router.get('/:id', checkJWT, checkUser, slotCtrl.getOneSlot);
+router.get('/customer/:customerId', checkJWT, checkUser, slotCtrl.getAllSlotsCustomer);
 
 module.exports = router;

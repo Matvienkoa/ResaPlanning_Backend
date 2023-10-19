@@ -9,6 +9,7 @@ router.get('/start/:start/end/:end', checkJWT, checkUser, preparationCtrl.getAll
 router.get('/customer/:customerId', checkJWT, checkUser, preparationCtrl.getAllPreparationsCustomerPlanned);
 router.get('/customer/:customerId/date/:date', checkJWT, checkUser, preparationCtrl.getAllPreparationsCustomerCompleted);
 router.get('/:id', checkJWT, checkUser, preparationCtrl.getOnePreparation);
+router.get('/slot/:slotId', checkJWT, checkUser, preparationCtrl.getAllPreparationsSlot);
 router.put('/:id', checkJWT, checkUser, preparationCtrl.editPreparation);
 router.put('/photo/:id', checkJWT, checkUser, multerImage, preparationCtrl.addPhoto);
 router.put('/photo/delete/:id', checkJWT, checkUser, preparationCtrl.deletePhoto);

@@ -21,15 +21,18 @@ exports.createPreparation = async (req, res) => {
         req.body.customerId === "" || req.body.customerId === undefined || req.body.customerId === null) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
+    let startTime = moment(req.body.startTime.hours + ":" + req.body.startTime.minutes + ":00", "HH:mm").format("HH:mm")
+    let start = moment(req.body.startDate + " " + startTime)
     let end = "";
     if (req.body.endTime === "" || req.body.endTime === undefined || req.body.endTime === null) {
-        end = moment(req.body.endDate + " " + req.body.startTime).add(1, 'hours')
-        if (moment(req.body.startDate + " " + req.body.startTime) >= end) {
+        end = moment(req.body.endDate + " " + startTime).add(1, 'hours')
+        if (start >= end) {
             return res.status(400).json({ message: "Merci de renseigner une date de fin ultérieure" });
         }
     } else {
-        end = moment(req.body.endDate + " " + req.body.endTime)
-        if (moment(req.body.startDate + " " + req.body.startTime) >= end) {
+        let endTime = moment(req.body.endTime.hours + ":" + req.body.endTime.minutes + ":00", "HH:mm").format("HH:mm")
+        end = moment(req.body.endDate + " " + endTime)
+        if (start >= end) {
             return res.status(400).json({ message: "Merci de renseigner une date de fin ultérieure" });
         }
     }
@@ -63,14 +66,15 @@ exports.createPreparation = async (req, res) => {
         phone: customer.phone,
         mail: customer.mail,
         state: 'planned',
-        start: moment(req.body.startDate + " " + req.body.startTime),
+        start: start,
         end: end,
         startMonth: moment(req.body.startDate).format('MM'),
         endMonth: moment(req.body.endDate).format('MM'),
         startYear: moment(req.body.startDate).format('YYYY'),
         endYear: moment(req.body.endDate).format('YYYY'),
         billed: "no",
-        maker: maker
+        maker: maker,
+        slotId: req.body.slotId
     })
     .then((preparation) => {
         if(req.body.steps.length > 0) {
@@ -102,15 +106,18 @@ exports.editPreparation = async (req, res) => {
         req.body.customerId === "" || req.body.customerId === undefined || req.body.customerId === null) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
+    let startTime = moment(req.body.startTime.hours + ":" + req.body.startTime.minutes + ":00", "HH:mm").format("HH:mm")
+    let start = moment(req.body.startDate + " " + startTime)
     let end = "";
     if (req.body.endTime === "" || req.body.endTime === undefined || req.body.endTime === null) {
-        end = moment(req.body.endDate + " " + req.body.startTime).add(1, 'hours')
-        if (moment(req.body.startDate + " " + req.body.startTime) >= end) {
+        end = moment(req.body.endDate + " " + startTime).add(1, 'hours')
+        if (start >= end) {
             return res.status(400).json({ message: "Merci de renseigner une date de fin ultérieure" });
         }
     } else {
-        end = moment(req.body.endDate + " " + req.body.endTime)
-        if (moment(req.body.startDate + " " + req.body.startTime) >= end) {
+        let endTime = moment(req.body.endTime.hours + ":" + req.body.endTime.minutes + ":00", "HH:mm").format("HH:mm")
+        end = moment(req.body.endDate + " " + endTime)
+        if (start >= end) {
             return res.status(400).json({ message: "Merci de renseigner une date de fin ultérieure" });
         }
     }
@@ -145,7 +152,7 @@ exports.editPreparation = async (req, res) => {
             phone: customer.phone,
             mail: customer.mail,
             state: 'planned',
-            start: moment(req.body.startDate + " " + req.body.startTime),
+            start: start,
             end: end,
             startMonth: moment(req.body.startDate).format('MM'),
             endMonth: moment(req.body.endDate).format('MM'),
@@ -692,6 +699,16 @@ exports.getAllPreparationsCustomerCompleted = (req, res) => {
     let month = moment(Date.parse(date)).format('MM');
     models.Preparations.findAll({
         where: { customerId: req.params.customerId, state: 'completed', endMonth: month, endYear: year },
+        order: [['createdAt', 'DESC']]
+    })
+    .then((preps) => res.status(200).json(preps))
+    .catch(error => res.status(400).json({ error }));
+}
+
+// Get all slot's preparations
+exports.getAllPreparationsSlot = (req, res) => {
+    models.Preparations.findAll({
+        where: { slotId: req.params.slotId },
         order: [['createdAt', 'DESC']]
     })
     .then((preps) => res.status(200).json(preps))

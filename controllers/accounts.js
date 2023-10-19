@@ -5,8 +5,8 @@ const passwordValidator = require('../middleware/passwordValidator');
 // Create Account Employee
 exports.createAccountEmployee = async (req, res) => {
     // Empty Inputs
-    if (req.body.login === "" || req.body.password === "" || req.body.password2 === "" || req.body.firstName === "" || req.body.privileges === "" ||
-        req.body.login === undefined || req.body.password === undefined || req.body.password2 === undefined || req.body.firstName === undefined || req.body.privileges === undefined) {
+    if (req.body.login === "" || req.body.password === "" || req.body.password2 === "" || req.body.firstName === "" || req.body.privileges === "" || req.body.privilegesM === "" ||
+        req.body.login === undefined || req.body.password === undefined || req.body.password2 === undefined || req.body.firstName === undefined || req.body.privileges === undefined || req.body.privilegesM === undefined) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
     // Bad Schema Password
@@ -29,14 +29,15 @@ exports.createAccountEmployee = async (req, res) => {
                         password: hash,
                         role: 'employee',
                         afc: 'yes',
-                        millenium: 'no'
+                        millenium: 'yes'
                     })
                     .then((user) => {
                         models.Employees.create({
                             userId: user.id,
                             firstName: req.body.firstName,
                             lastName: req.body.lastName,
-                            privileges: req.body.privileges
+                            privileges: req.body.privileges,
+                            privilegesM: req.body.privilegesM
                         })
                         .then((employee) => res.status(201).json(employee))
                         .catch(error => res.status(400).json({ error }));
@@ -111,8 +112,8 @@ exports.createAccountCustomer = async (req, res) => {
 // Edit Account Employee
 exports.editAccountEmployee = async (req, res) => {
     // Empty Inputs
-    if (req.body.login === "" || req.body.firstName === "" || req.body.privileges === "" ||
-        req.body.login === undefined || req.body.firstName === undefined || req.body.privileges === undefined) {
+    if (req.body.login === "" || req.body.firstName === "" || req.body.privileges === "" || req.body.privilegesM === "" ||
+        req.body.login === undefined || req.body.firstName === undefined || req.body.privileges === undefined || req.body.privilegesM === undefined) {
         return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
     }
     // Bad Schema Password
@@ -139,7 +140,8 @@ exports.editAccountEmployee = async (req, res) => {
                     employee.update({
                         firstName: req.body.firstName,
                         lastName: req.body.lastName,
-                        privileges: req.body.privileges
+                        privileges: req.body.privileges,
+                        privilegesM: req.body.privilegesM
                     })
                     .then((employee) => res.status(201).json(employee))
                     .catch(error => res.status(400).json({ error }));

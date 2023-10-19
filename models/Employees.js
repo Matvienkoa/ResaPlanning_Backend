@@ -13,6 +13,9 @@ const Employees = db.define('employees', {
     },
     privileges: {
         type: Sequelize.STRING
+    },
+    privilegesM: {
+        type: Sequelize.STRING
     }
 });
 

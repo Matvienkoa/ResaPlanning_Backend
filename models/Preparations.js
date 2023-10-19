@@ -97,6 +97,9 @@ const Preparations = db.define('preparations', {
     },
     maker: {
         type: Sequelize.STRING
+    },
+    slotId: {
+        type: Sequelize.INTEGER
     }
 });
 
