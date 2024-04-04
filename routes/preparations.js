@@ -5,6 +5,8 @@ const multerImage = require('../middleware/multerImage');
 const { checkJWT, checkUser } = require('../middleware/auth');
 
 router.post('/', checkJWT, checkUser, preparationCtrl.createPreparation);
+router.post('/check', checkJWT, checkUser, preparationCtrl.checkDuplicate);
+router.post('/check/:id', checkJWT, checkUser, preparationCtrl.checkDuplicateEdit);
 router.get('/start/:start/end/:end', checkJWT, checkUser, preparationCtrl.getAllPreparations);
 router.get('/customer/:customerId', checkJWT, checkUser, preparationCtrl.getAllPreparationsCustomerPlanned);
 router.get('/customer/:customerId/date/:date', checkJWT, checkUser, preparationCtrl.getAllPreparationsCustomerCompleted);

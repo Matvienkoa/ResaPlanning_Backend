@@ -6,6 +6,8 @@ const { checkJWT, checkUser } = require('../middleware/auth');
 
 router.post('/', checkJWT, checkUser, prepRequestCtrl.createPrepRequest);
 router.post('/photo', checkJWT, checkUser, multerImage, prepRequestCtrl.createPrepRequestPhoto);
+router.post('/check', checkJWT, checkUser, prepRequestCtrl.checkDuplicate);
+router.post('/check/:id', checkJWT, checkUser, prepRequestCtrl.checkDuplicateEdit);
 router.put('/:id', checkJWT, checkUser, prepRequestCtrl.editPrepRequest);
 router.put('/validate/:id', checkJWT, checkUser, prepRequestCtrl.validatePrepRequest);
 router.put('/refuse/:id', checkJWT, checkUser, prepRequestCtrl.refusePrepRequest);

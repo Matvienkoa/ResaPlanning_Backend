@@ -6,6 +6,48 @@ const { Op } = require("sequelize");
 const sharp = require('sharp');
 const path = require('path');
 
+exports.checkDuplicate = (req, res) => {
+    // Empty Inputs
+    if (req.body.immat === "" || req.body.immat === undefined ||
+        req.body.brand === "" || req.body.brand === undefined ||
+        req.body.model === "" || req.body.model === undefined ||
+        req.body.year === "" || req.body.year === undefined ||
+        req.body.kilometer === "" || req.body.kilometer === undefined ||
+        req.body.condition === "" || req.body.condition === undefined ||
+        req.body.startDate === "" || req.body.startDate === undefined || req.body.startDate === null ||
+        req.body.endDate === "" || req.body.endDate === undefined || req.body.endDate === null ||
+        req.body.startTime === "" || req.body.startTime === undefined || req.body.startTime === null ||
+        req.body.customerId === "" || req.body.customerId === undefined || req.body.customerId === null) {
+        return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
+    }
+    models.Preparations.findAll({
+        where: { immat: req.body.immat }
+    })
+    .then((preps) => res.status(201).json(preps))
+    .catch(error => res.status(400).json({ error }));
+};
+
+exports.checkDuplicateEdit = (req, res) => {
+    // Empty Inputs
+    if (req.body.immat === "" || req.body.immat === undefined ||
+        req.body.brand === "" || req.body.brand === undefined ||
+        req.body.model === "" || req.body.model === undefined ||
+        req.body.year === "" || req.body.year === undefined ||
+        req.body.kilometer === "" || req.body.kilometer === undefined ||
+        req.body.condition === "" || req.body.condition === undefined ||
+        req.body.startDate === "" || req.body.startDate === undefined || req.body.startDate === null ||
+        req.body.endDate === "" || req.body.endDate === undefined || req.body.endDate === null ||
+        req.body.startTime === "" || req.body.startTime === undefined || req.body.startTime === null ||
+        req.body.customerId === "" || req.body.customerId === undefined || req.body.customerId === null) {
+        return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
+    }
+    models.Preparations.findAll({
+        where: { immat: req.body.immat, id: { [Op.ne]: req.params.id } }
+    })
+        .then((preps) => res.status(201).json(preps))
+        .catch(error => res.status(400).json({ error }));
+};
+
 // Create Preparation
 exports.createPreparation = async (req, res) => {
     // Empty Inputs

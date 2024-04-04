@@ -2,6 +2,53 @@ const models = require('../models/Index');
 const fs = require('fs');
 const sharp = require('sharp');
 const path = require('path');
+const { Op } = require("sequelize");
+
+exports.checkDuplicate = async (req, res) => {
+    // Empty Inputs
+    if (req.body.immat === "" || req.body.immat === undefined ||
+        req.body.brand === "" || req.body.brand === undefined ||
+        req.body.model === "" || req.body.model === undefined ||
+        req.body.deliveryDate === "" || req.body.deliveryDate === undefined || req.body.deliveryDate === null) {
+        return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
+    }
+    try {
+        const prepRequests = await models.PrepRequests.findAll({
+            where: { immat: req.body.immat }
+        });
+        const preps = await models.Preparations.findAll({
+            where: { immat: req.body.immat }
+        });
+        const combinedResults = [...prepRequests, ...preps];
+        return res.status(200).json(combinedResults);
+    } catch (error) {
+        console.error("Error when checking for duplicates:", error);
+        return res.status(500).json({ message: "An error occurred while checking for duplicates." });
+    }
+};
+
+exports.checkDuplicateEdit = async (req, res) => {
+    // Empty Inputs
+    if (req.body.immat === "" || req.body.immat === undefined ||
+        req.body.brand === "" || req.body.brand === undefined ||
+        req.body.model === "" || req.body.model === undefined ||
+        req.body.deliveryDate === "" || req.body.deliveryDate === undefined || req.body.deliveryDate === null) {
+        return res.status(400).json({ message: "Merci de renseigner tous les Champs Obligatoires" });
+    }
+    try {
+        const prepRequests = await models.PrepRequests.findAll({
+            where: { immat: req.body.immat, id: { [Op.ne]: req.params.id } }
+        });
+        const preps = await models.Preparations.findAll({
+            where: { immat: req.body.immat }
+        });
+        const combinedResults = [...prepRequests, ...preps];
+        return res.status(200).json(combinedResults);
+    } catch (error) {
+        console.error("Error when checking for duplicates:", error);
+        return res.status(500).json({ message: "An error occurred while checking for duplicates." });
+    }
+};
 
 // Create prepRequest
 exports.createPrepRequest = async (req, res) => {
@@ -178,6 +225,20 @@ exports.refusePrepRequest = (req, res) => {
 exports.deletePrepRequest = (req, res) => {
     models.PrepRequests.findOne({ where: { id: req.params.id } })
     .then((prepR) => {
+        if (prepR.photo) {
+            let filename = prepR.photo.split('/images/')[1];
+            if (filename !== undefined) {
+                fs.unlink(`images/${filename}`,
+                    function (err) {
+                        if (err) {
+                            console.log('error');
+                        } else {
+                            console.log('fichier supprimé');
+                        }
+                    }
+                )
+            }
+        }
         prepR.destroy()
         .then(() => res.status(200).json({ message: 'Demande supprimée' }))
         .catch(error => res.status(400).json({ error }));
